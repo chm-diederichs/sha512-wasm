@@ -1,13 +1,30 @@
 const sha512 = require('./')
 const crypto = require('crypto')
+const ref = require('js-sha512').sha512
 
 const hash = sha512()
-  .update('abc')
+  .update('abcdefg')
+  .update('qwertyuio')
+  .update('the quick brown')
+  .update('!')
+  .update('the lazy dog @')
+  .update('jumped over it, hoping ^')
+  .update('!@`$%*&iii#')
+  .update("now let's see if you can handle an exceptionally long sentence, hopefully one that fills the block size and then some... now wou")//ldn")//'t")// that be an ")//interesting test case, i'm sure i'd like to know the result of that. Wouldn't you?")
   .digest('hex')
 
 const refHash = crypto.createHash('sha512')
-  .update('abc')
+  .update('abcdefg')
+  .update('qwertyuio')
+  .update('the quick brown')
+  .update('!')
+  .update('the lazy dog @')
+  .update('jumped over it, hoping ^')
+  .update('!@`$%*&iii#')
+  .update("now let's see if you can handle an exceptionally long sentence, hopefully one that fills the block size and then some... now wou")//ldn")//'t")// that be an ")//interesting test case, i'm sure i'd like to know the result of that. Wouldn't you?")
   .digest('hex')
+
+// console.log(ref('abc'))
 
 console.log(hash)
 console.log(refHash)

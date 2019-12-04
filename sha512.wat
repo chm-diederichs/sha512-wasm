@@ -18,7 +18,7 @@
         (call $i32x2.log
             ;; Upper limb
             (i32.wrap/i64
-                (i64.shl (get_local $0)
+                (i64.shr_u (get_local $0)
                          (i64.const 32)))
             ;; Lower limb
             (i32.wrap/i64 (get_local $0))))
@@ -39,91 +39,108 @@
         (i64.store offset=48 (get_local $ptr) (i64.xor (i64.const 0x1f83d9abfb41bd6b) (i64.const 0)))
         (i64.store offset=56 (get_local $ptr) (i64.xor (i64.const 0x5be0cd19137e2179) (i64.const 0)))
               
-        (i64.store offset=64 (get_local $ptr) (i64.xor (i64.const 0x428a2f98d728ae22) (i64.const 0)))
-        (i64.store offset=72 (get_local $ptr) (i64.xor (i64.const 0x7137449123ef65cd) (i64.const 0)))
-        (i64.store offset=80 (get_local $ptr) (i64.xor (i64.const 0xb5c0fbcfec4d3b2f) (i64.const 0)))
-        (i64.store offset=88 (get_local $ptr) (i64.xor (i64.const 0xe9b5dba58189dbbc) (i64.const 0)))
-        (i64.store offset=96 (get_local $ptr) (i64.xor (i64.const 0x3956c25bf348b538) (i64.const 0)))
-        (i64.store offset=104 (get_local $ptr) (i64.xor (i64.const 0x59f111f1b605d019) (i64.const 0)))
-        (i64.store offset=112 (get_local $ptr) (i64.xor (i64.const 0x923f82a4af194f9b) (i64.const 0)))
-        (i64.store offset=120 (get_local $ptr) (i64.xor (i64.const 0xab1c5ed5da6d8118) (i64.const 0)))
-        (i64.store offset=128 (get_local $ptr) (i64.xor (i64.const 0xd807aa98a3030242) (i64.const 0)))
-        (i64.store offset=136 (get_local $ptr) (i64.xor (i64.const 0x12835b0145706fbe) (i64.const 0)))
-        (i64.store offset=144 (get_local $ptr) (i64.xor (i64.const 0x243185be4ee4b28c) (i64.const 0)))
-        (i64.store offset=152 (get_local $ptr) (i64.xor (i64.const 0x550c7dc3d5ffb4e2) (i64.const 0)))
-        (i64.store offset=160 (get_local $ptr) (i64.xor (i64.const 0x72be5d74f27b896f) (i64.const 0)))
-        (i64.store offset=168 (get_local $ptr) (i64.xor (i64.const 0x80deb1fe3b1696b1) (i64.const 0)))
-        (i64.store offset=176 (get_local $ptr) (i64.xor (i64.const 0x9bdc06a725c71235) (i64.const 0)))
-        (i64.store offset=184 (get_local $ptr) (i64.xor (i64.const 0xc19bf174cf692694) (i64.const 0)))
-        (i64.store offset=192 (get_local $ptr) (i64.xor (i64.const 0xe49b69c19ef14ad2) (i64.const 0)))
-        (i64.store offset=200 (get_local $ptr) (i64.xor (i64.const 0xefbe4786384f25e3) (i64.const 0)))
-        (i64.store offset=208 (get_local $ptr) (i64.xor (i64.const 0x0fc19dc68b8cd5b5) (i64.const 0)))
-        (i64.store offset=216 (get_local $ptr) (i64.xor (i64.const 0x240ca1cc77ac9c65) (i64.const 0)))
-        (i64.store offset=224 (get_local $ptr) (i64.xor (i64.const 0x2de92c6f592b0275) (i64.const 0)))
-        (i64.store offset=232 (get_local $ptr) (i64.xor (i64.const 0x4a7484aa6ea6e483) (i64.const 0)))
-        (i64.store offset=240 (get_local $ptr) (i64.xor (i64.const 0x5cb0a9dcbd41fbd4) (i64.const 0)))
-        (i64.store offset=248 (get_local $ptr) (i64.xor (i64.const 0x76f988da831153b5) (i64.const 0)))
-        (i64.store offset=256 (get_local $ptr) (i64.xor (i64.const 0x983e5152ee66dfab) (i64.const 0)))
-        (i64.store offset=264 (get_local $ptr) (i64.xor (i64.const 0xa831c66d2db43210) (i64.const 0)))
-        (i64.store offset=272 (get_local $ptr) (i64.xor (i64.const 0xb00327c898fb213f) (i64.const 0)))
-        (i64.store offset=280 (get_local $ptr) (i64.xor (i64.const 0xbf597fc7beef0ee4) (i64.const 0)))
-        (i64.store offset=288 (get_local $ptr) (i64.xor (i64.const 0xc6e00bf33da88fc2) (i64.const 0)))
-        (i64.store offset=296 (get_local $ptr) (i64.xor (i64.const 0xd5a79147930aa725) (i64.const 0)))
-        (i64.store offset=304 (get_local $ptr) (i64.xor (i64.const 0x06ca6351e003826f) (i64.const 0)))
-        (i64.store offset=312 (get_local $ptr) (i64.xor (i64.const 0x142929670a0e6e70) (i64.const 0)))
-        (i64.store offset=320 (get_local $ptr) (i64.xor (i64.const 0x27b70a8546d22ffc) (i64.const 0)))
-        (i64.store offset=328 (get_local $ptr) (i64.xor (i64.const 0x2e1b21385c26c926) (i64.const 0)))
-        (i64.store offset=336 (get_local $ptr) (i64.xor (i64.const 0x4d2c6dfc5ac42aed) (i64.const 0)))
-        (i64.store offset=344 (get_local $ptr) (i64.xor (i64.const 0x53380d139d95b3df) (i64.const 0)))
-        (i64.store offset=352 (get_local $ptr) (i64.xor (i64.const 0x650a73548baf63de) (i64.const 0)))
-        (i64.store offset=360 (get_local $ptr) (i64.xor (i64.const 0x766a0abb3c77b2a8) (i64.const 0)))
-        (i64.store offset=368 (get_local $ptr) (i64.xor (i64.const 0x81c2c92e47edaee6) (i64.const 0)))
-        (i64.store offset=376 (get_local $ptr) (i64.xor (i64.const 0x92722c851482353b) (i64.const 0)))
-        (i64.store offset=384 (get_local $ptr) (i64.xor (i64.const 0xa2bfe8a14cf10364) (i64.const 0)))
-        (i64.store offset=392 (get_local $ptr) (i64.xor (i64.const 0xa81a664bbc423001) (i64.const 0)))
-        (i64.store offset=400 (get_local $ptr) (i64.xor (i64.const 0xc24b8b70d0f89791) (i64.const 0)))
-        (i64.store offset=408 (get_local $ptr) (i64.xor (i64.const 0xc76c51a30654be30) (i64.const 0)))
-        (i64.store offset=416 (get_local $ptr) (i64.xor (i64.const 0xd192e819d6ef5218) (i64.const 0)))
-        (i64.store offset=424 (get_local $ptr) (i64.xor (i64.const 0xd69906245565a910) (i64.const 0)))
-        (i64.store offset=432 (get_local $ptr) (i64.xor (i64.const 0xf40e35855771202a) (i64.const 0)))
-        (i64.store offset=440 (get_local $ptr) (i64.xor (i64.const 0x106aa07032bbd1b8) (i64.const 0)))
-        (i64.store offset=448 (get_local $ptr) (i64.xor (i64.const 0x19a4c116b8d2d0c8) (i64.const 0)))
-        (i64.store offset=456 (get_local $ptr) (i64.xor (i64.const 0x1e376c085141ab53) (i64.const 0)))
-        (i64.store offset=464 (get_local $ptr) (i64.xor (i64.const 0x2748774cdf8eeb99) (i64.const 0)))
-        (i64.store offset=472 (get_local $ptr) (i64.xor (i64.const 0x34b0bcb5e19b48a8) (i64.const 0)))
-        (i64.store offset=480 (get_local $ptr) (i64.xor (i64.const 0x391c0cb3c5c95a63) (i64.const 0)))
-        (i64.store offset=488 (get_local $ptr) (i64.xor (i64.const 0x4ed8aa4ae3418acb) (i64.const 0)))
-        (i64.store offset=496 (get_local $ptr) (i64.xor (i64.const 0x5b9cca4f7763e373) (i64.const 0)))
-        (i64.store offset=504 (get_local $ptr) (i64.xor (i64.const 0x682e6ff3d6b2b8a3) (i64.const 0)))
-        (i64.store offset=512 (get_local $ptr) (i64.xor (i64.const 0x748f82ee5defb2fc) (i64.const 0)))
-        (i64.store offset=520 (get_local $ptr) (i64.xor (i64.const 0x78a5636f43172f60) (i64.const 0)))
-        (i64.store offset=528 (get_local $ptr) (i64.xor (i64.const 0x84c87814a1f0ab72) (i64.const 0)))
-        (i64.store offset=536 (get_local $ptr) (i64.xor (i64.const 0x8cc702081a6439ec) (i64.const 0)))
-        (i64.store offset=544 (get_local $ptr) (i64.xor (i64.const 0x90befffa23631e28) (i64.const 0)))
-        (i64.store offset=552 (get_local $ptr) (i64.xor (i64.const 0xa4506cebde82bde9) (i64.const 0)))
-        (i64.store offset=560 (get_local $ptr) (i64.xor (i64.const 0xbef9a3f7b2c67915) (i64.const 0)))
-        (i64.store offset=568 (get_local $ptr) (i64.xor (i64.const 0xc67178f2e372532b) (i64.const 0)))
+        (i64.store offset=0 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x428a2f98d728ae22) (i64.const 0)))
+        (i64.store offset=8 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x7137449123ef65cd) (i64.const 0)))
+        (i64.store offset=16 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0xb5c0fbcfec4d3b2f) (i64.const 0)))
+        (i64.store offset=24 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0xe9b5dba58189dbbc) (i64.const 0)))
+        (i64.store offset=32 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x3956c25bf348b538) (i64.const 0)))
+        (i64.store offset=40 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x59f111f1b605d019) (i64.const 0)))
+        (i64.store offset=48 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x923f82a4af194f9b) (i64.const 0)))
+        (i64.store offset=56 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0xab1c5ed5da6d8118) (i64.const 0)))
+        (i64.store offset=64 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0xd807aa98a3030242) (i64.const 0)))
+        (i64.store offset=72 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x12835b0145706fbe) (i64.const 0)))
+        (i64.store offset=80 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x243185be4ee4b28c) (i64.const 0)))
+        (i64.store offset=88 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x550c7dc3d5ffb4e2) (i64.const 0)))
+        (i64.store offset=96 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x72be5d74f27b896f) (i64.const 0)))
+        (i64.store offset=104 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x80deb1fe3b1696b1) (i64.const 0)))
+        (i64.store offset=112 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x9bdc06a725c71235) (i64.const 0)))
+        (i64.store offset=120 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0xc19bf174cf692694) (i64.const 0)))
+        (i64.store offset=128 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0xe49b69c19ef14ad2) (i64.const 0)))
+        (i64.store offset=136 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0xefbe4786384f25e3) (i64.const 0)))
+        (i64.store offset=144 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x0fc19dc68b8cd5b5) (i64.const 0)))
+        (i64.store offset=152 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x240ca1cc77ac9c65) (i64.const 0)))
+        (i64.store offset=160 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x2de92c6f592b0275) (i64.const 0)))
+        (i64.store offset=168 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x4a7484aa6ea6e483) (i64.const 0)))
+        (i64.store offset=176 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x5cb0a9dcbd41fbd4) (i64.const 0)))
+        (i64.store offset=184 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x76f988da831153b5) (i64.const 0)))
+        (i64.store offset=192 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x983e5152ee66dfab) (i64.const 0)))
+        (i64.store offset=200 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0xa831c66d2db43210) (i64.const 0)))
+        (i64.store offset=208 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0xb00327c898fb213f) (i64.const 0)))
+        (i64.store offset=216 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0xbf597fc7beef0ee4) (i64.const 0)))
+        (i64.store offset=224 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0xc6e00bf33da88fc2) (i64.const 0)))
+        (i64.store offset=232 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0xd5a79147930aa725) (i64.const 0)))
+        (i64.store offset=240 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x06ca6351e003826f) (i64.const 0)))
+        (i64.store offset=248 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x142929670a0e6e70) (i64.const 0)))
+        (i64.store offset=256 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x27b70a8546d22ffc) (i64.const 0)))
+        (i64.store offset=264 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x2e1b21385c26c926) (i64.const 0)))
+        (i64.store offset=272 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x4d2c6dfc5ac42aed) (i64.const 0)))
+        (i64.store offset=280 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x53380d139d95b3df) (i64.const 0)))
+        (i64.store offset=288 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x650a73548baf63de) (i64.const 0)))
+        (i64.store offset=296 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x766a0abb3c77b2a8) (i64.const 0)))
+        (i64.store offset=304 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x81c2c92e47edaee6) (i64.const 0)))
+        (i64.store offset=312 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x92722c851482353b) (i64.const 0)))
+        (i64.store offset=320 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0xa2bfe8a14cf10364) (i64.const 0)))
+        (i64.store offset=328 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0xa81a664bbc423001) (i64.const 0)))
+        (i64.store offset=336 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0xc24b8b70d0f89791) (i64.const 0)))
+        (i64.store offset=344 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0xc76c51a30654be30) (i64.const 0)))
+        (i64.store offset=352 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0xd192e819d6ef5218) (i64.const 0)))
+        (i64.store offset=360 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0xd69906245565a910) (i64.const 0)))
+        (i64.store offset=368 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0xf40e35855771202a) (i64.const 0)))
+        (i64.store offset=376 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x106aa07032bbd1b8) (i64.const 0)))
+        (i64.store offset=384 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x19a4c116b8d2d0c8) (i64.const 0)))
+        (i64.store offset=392 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x1e376c085141ab53) (i64.const 0)))
+        (i64.store offset=400 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x2748774cdf8eeb99) (i64.const 0)))
+        (i64.store offset=408 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x34b0bcb5e19b48a8) (i64.const 0)))
+        (i64.store offset=416 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x391c0cb3c5c95a63) (i64.const 0)))
+        (i64.store offset=424 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x4ed8aa4ae3418acb) (i64.const 0)))
+        (i64.store offset=432 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x5b9cca4f7763e373) (i64.const 0)))
+        (i64.store offset=440 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x682e6ff3d6b2b8a3) (i64.const 0)))
+        (i64.store offset=448 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x748f82ee5defb2fc) (i64.const 0)))
+        (i64.store offset=456 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x78a5636f43172f60) (i64.const 0)))
+        (i64.store offset=464 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x84c87814a1f0ab72) (i64.const 0)))
+        (i64.store offset=472 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x8cc702081a6439ec) (i64.const 0)))
+        (i64.store offset=480 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x90befffa23631e28) (i64.const 0)))
+        (i64.store offset=488 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0xa4506cebde82bde9) (i64.const 0)))
+        (i64.store offset=496 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0xbef9a3f7b2c67915) (i64.const 0)))
+        (i64.store offset=504 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0xc67178f2e372532b) (i64.const 0)))
+        (i64.store offset=512 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0xca273eceea26619c) (i64.const 0)))
+        (i64.store offset=520 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0xd186b8c721c0c207) (i64.const 0)))
+        (i64.store offset=528 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0xeada7dd6cde0eb1e) (i64.const 0)))
+        (i64.store offset=536 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0xf57d4f7fee6ed178) (i64.const 0)))
+        (i64.store offset=544 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x06f067aa72176fba) (i64.const 0)))
+        (i64.store offset=552 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x0a637dc5a2c898a6) (i64.const 0)))
+        (i64.store offset=560 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x113f9804bef90dae) (i64.const 0)))
+        (i64.store offset=568 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x1b710b35131c471b) (i64.const 0)))
+        (i64.store offset=576 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x28db77f523047d84) (i64.const 0)))
+        (i64.store offset=584 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x32caab7b40c72493) (i64.const 0)))
+        (i64.store offset=592 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x3c9ebe0a15c9bebc) (i64.const 0)))
+        (i64.store offset=600 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x431d67c49c100d4c) (i64.const 0)))
+        (i64.store offset=608 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x4cc5d4becb3e42b6) (i64.const 0)))
+        (i64.store offset=616 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x597f299cfc657e2a) (i64.const 0)))
+        (i64.store offset=624 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x5fcb6fab3ad6faec) (i64.const 0)))
+        (i64.store offset=632 (i32.add (get_local $ptr) (i32.const 64)) (i64.xor (i64.const 0x6c44198c4a475817) (i64.const 0)))
+
         
-        (i64.store offset=576 (get_local $ptr) (i64.const 0))
-        (i64.store offset=584 (get_local $ptr) (i64.const 0))
-        (i64.store offset=592 (get_local $ptr) (i64.const 0))
-        (i64.store offset=600 (get_local $ptr) (i64.const 0))
-        (i64.store offset=608 (get_local $ptr) (i64.const 0))
-        (i64.store offset=616 (get_local $ptr) (i64.const 0))
-        (i64.store offset=624 (get_local $ptr) (i64.const 0))
-        (i64.store offset=632 (get_local $ptr) (i64.const 0))
-        (i64.store offset=640 (get_local $ptr) (i64.const 0))
-        (i64.store offset=648 (get_local $ptr) (i64.const 0))
-        (i64.store offset=656 (get_local $ptr) (i64.const 0))
-        (i64.store offset=664 (get_local $ptr) (i64.const 0))
-        (i64.store offset=672 (get_local $ptr) (i64.const 0))
-        (i64.store offset=680 (get_local $ptr) (i64.const 0))
-        (i64.store offset=688 (get_local $ptr) (i64.const 0))
-        (i64.store offset=696 (get_local $ptr) (i64.const 0))
+        (i64.store offset=0 (i32.add (get_local $ptr) (i32.const 704)) (i64.const 0))
+        (i64.store offset=8 (i32.add (get_local $ptr) (i32.const 704)) (i64.const 0))
+        (i64.store offset=16 (i32.add (get_local $ptr) (i32.const 704)) (i64.const 0))
+        (i64.store offset=24 (i32.add (get_local $ptr) (i32.const 704)) (i64.const 0))
+        (i64.store offset=32 (i32.add (get_local $ptr) (i32.const 704)) (i64.const 0))
+        (i64.store offset=40 (i32.add (get_local $ptr) (i32.const 704)) (i64.const 0))
+        (i64.store offset=48 (i32.add (get_local $ptr) (i32.const 704)) (i64.const 0))
+        (i64.store offset=56 (i32.add (get_local $ptr) (i32.const 704)) (i64.const 0))
+        (i64.store offset=64 (i32.add (get_local $ptr) (i32.const 704)) (i64.const 0))
+        (i64.store offset=72 (i32.add (get_local $ptr) (i32.const 704)) (i64.const 0))
+        (i64.store offset=80 (i32.add (get_local $ptr) (i32.const 704)) (i64.const 0))
+        (i64.store offset=88 (i32.add (get_local $ptr) (i32.const 704)) (i64.const 0))
+        (i64.store offset=96 (i32.add (get_local $ptr) (i32.const 704)) (i64.const 0))
+        (i64.store offset=104 (i32.add (get_local $ptr) (i32.const 704)) (i64.const 0))
+        (i64.store offset=112 (i32.add (get_local $ptr) (i32.const 704)) (i64.const 0))
+        (i64.store offset=120 (i32.add (get_local $ptr) (i32.const 704)) (i64.const 0))
 
-        (i32.store offset=704 (get_local $ptr) (i32.const 0xffffffff))
+        (i32.store offset=832 (get_local $ptr) (i32.const 0xffffffff))
 
-        (i32.store offset=708 (get_local $ptr) (i32.const 0)))
+        (i32.store offset=840 (get_local $ptr) (i32.const 0)))
 
     (func $Ch (param $x i64) (param $y i64) (param $z i64)
         (result i64)
@@ -145,21 +162,21 @@
 
     (func $big_sig0 (param $x i64)
         (result i64)
-      
+
         (i64.xor
             (i64.xor
                 (i64.rotr (get_local $x) (i64.const 28))
-                (i64.rotr (get_local $x) (i64.const 34))
-             (i64.rotr (get_local $x (i64.const 39))))))
+                (i64.rotr (get_local $x) (i64.const 34)))
+            (i64.rotr (get_local $x) (i64.const 39))))
 
     (func $big_sig1 (param $x i64)
         (result i64)
-      
+
         (i64.xor
             (i64.xor
                 (i64.rotr (get_local $x) (i64.const 14))
                 (i64.rotr (get_local $x) (i64.const 18)))
-            (i64.rotr (get_local $x (i64.const 41)))))
+            (i64.rotr (get_local $x) (i64.const 41))))
   
     (func $sig0 (param $x i64)
         (result i64)
@@ -188,7 +205,7 @@
               
         (i32.store offset=132 (get_local $ctx) (get_local $input_end))
     
-        (set_local $i (i32.const 3))
+        (set_local $i (i32.const 7))
         (set_local $block_end (i32.const 135))
           
         (block $end
@@ -198,25 +215,20 @@
                 (if (i32.eq (get_local $i) (get_local $block_end))
                     (then
                         (set_local $block_end (i32.add (get_local $block_end) (i32.const 128)))
-                        (call $i32.log (i32.const 0xdeadbeef))        
 
                         (call $sha512_compress (get_local $ctx))
                         (br $start)))
-                (call $i32.log (get_local $ctx))        
-                (call $i64.log (i64.load8_u (get_local $input)))
-                (call $i32.log (i32.add (get_local $ctx) (i32.rem_u (get_local $i) (i32.const 128))))
+        
                 (i64.store8 (i32.add (get_local $ctx) (i32.rem_u (get_local $i) (i32.const 128))) (i64.load8_u (get_local $input)))
-                (call $i64.log (i64.load (i32.add (get_local $ctx) (i32.rem_u (get_local $i) (i32.const 128)))))
-                (call $i64.log (i64.load (i32.const 0x244)))
-                (call $i32.log (i32.load (i32.const 0x4f8)))
-                (call $i32.log (i32.add (get_local $ctx) (i32.rem_u (get_local $i) (i32.const 128))))
                 
                 (set_local $i (i32.sub (get_local $i) (i32.const 1)))
                 (set_local $input (i32.add (get_local $input) (i32.const 1)))
                 
-                (if (i32.eq (i32.rem_u (get_local $i) (i32.const 8)) (i32.const 3))
+                (if (i32.eq (i32.rem_u (get_local $i) (i32.const 8)) (i32.const 7))
                     (then
                         (set_local $i (i32.add (get_local $i) (i32.const 16)))))
+                (call $i32.log (get_local $i))
+
                 (br $start))))
 
     (func $sha512_pad (export "sha512_pad") (param $ctx i32)
@@ -246,10 +258,7 @@
                   
                 (i64.store8 (get_local $input_end) (i64.const 0))
                 (br $pad)))
-        (call $i32.log (get_local $input_start))
-        (call $i32.log (get_local $input_end))
-        (call $i64.log (get_local $input_length))
-        
+
         (i64.store offset=0 (get_local $input_end) (i64.const 0))
         (i64.store8 offset=8 (get_local $input_end) (i64.shr_u (get_local $input_length) (i64.const 56)))
         (i64.store8 offset=9 (get_local $input_end) (i64.shr_u (get_local $input_length) (i64.const 48)))
@@ -261,7 +270,7 @@
         (i64.store8 offset=15 (get_local $input_end) (i64.shr_u (get_local $input_length) (i64.const 0)))
         
         (set_local $input_end (i32.add (get_local $input_end) (i32.const 16)))
-        (call $i32.log (get_local $input_start))
+
         (call $sha512_update (get_local $ctx) (get_local $input_start) (get_local $input_end)))
           
     (func $sha512_compress (export "sha512_compress") (param $mem i32)
@@ -306,8 +315,6 @@
         (local $w72 i64) (local $w73 i64) (local $w74 i64) (local $w75 i64) 
         (local $w76 i64) (local $w77 i64) (local $w78 i64) (local $w79 i64)
         
-        (call $i32.log (get_local $mem))
-        (call $i64.log (i64.load offset=0 (i32.const 576)))
         (set_local $w0 (i64.load offset=0 (get_local $mem)))
         (set_local $w1 (i64.load offset=8 (get_local $mem)))
         (set_local $w2 (i64.load offset=16 (get_local $mem)))
@@ -412,7 +419,7 @@
         (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
 
-        (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w0)) (i64.load offset=0 (i32.const 60))))
+        (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w0)) (i64.load offset=0 (i32.const 64))))
         (set_local $T2 (i64.add (get_local $big_sig0_res) (get_local $maj_res)))
 
         ;; update registers
@@ -440,16 +447,6 @@
 
         ;; a <- T1 + T2
         (set_local $a (i64.add (get_local $T1) (get_local $T2)))
-
-        ;; (call $i64.log (get_local $mem)) ;; 
-        (call $i64.log (get_local $ch_res)) ;; 
-        (call $i64.log (get_local $maj_res)) ;;
-        (call $i64.log (get_local $big_sig1_res)) ;;
-        (call $i64.log (get_local $big_sig0_res)) ;;
-        (call $i64.log (get_local $w0))
-        (call $i64.log (i64.load (i32.const 60))) ;;
-        (call $i64.log (get_local $T1))
-        (call $i64.log (get_local $T2)) ;;
 
         ;; ROUND 1
 
@@ -3689,33 +3686,15 @@
 
         ;; a <- T1 + T2
         (set_local $a (i64.add (get_local $T1) (get_local $T2)))
-  
+ 
         ;; HASH COMPLETE FOR MESSAGE BLOCK
         ;; store hash values
         (i64.store offset=0  (i32.const 0) (i64.add (i64.load offset=0  (i32.const 0)) (get_local $a)))
-        (i64.store offset=4  (i32.const 0) (i64.add (i64.load offset=4  (i32.const 0)) (get_local $b)))
+        (i64.store offset=8  (i32.const 0) (i64.add (i64.load offset=8  (i32.const 0)) (get_local $b)))
         (i64.store offset=16 (i32.const 0) (i64.add (i64.load offset=16 (i32.const 0)) (get_local $c)))
         (i64.store offset=24 (i32.const 0) (i64.add (i64.load offset=24 (i32.const 0)) (get_local $d)))
         (i64.store offset=32 (i32.const 0) (i64.add (i64.load offset=32 (i32.const 0)) (get_local $e)))
         (i64.store offset=40 (i32.const 0) (i64.add (i64.load offset=40 (i32.const 0)) (get_local $f)))
         (i64.store offset=48 (i32.const 0) (i64.add (i64.load offset=48 (i32.const 0)) (get_local $g)))
         (i64.store offset=56 (i32.const 0) (i64.add (i64.load offset=56 (i32.const 0)) (get_local $h)))))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

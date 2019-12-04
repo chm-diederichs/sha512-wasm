@@ -13,7 +13,7 @@ const wasm = require('./sha512')({
   }
 })
 
-let head = 576
+let head = 704
 const freeList = []
 
 module.exports = Sha512
@@ -49,18 +49,11 @@ Sha512.prototype.update = function (input) {
 
   if (head + input.length > wasm.memory.length) wasm.realloc(head + input.length)
   wasm.memory.set(inputBuf, head)
-console.log(this.pointer)
-  wasm.exports.sha512_update(this.pointer, head, head + length)
-  // console.log(wasm.memory.subarray(this.pointer), head, 'hash state + word constants')
 
-  console.log(length)
+  wasm.exports.sha512_update(this.pointer, head, head + length)
+
   head += length
-  const memSlice = hexSlice(wasm.memory, 0, 64)
-  // console.log('')
-  for (let i = 0; i < memSlice.length; i += 8) {
-    // console.log(memSlice.slice(i, i + 8))
-    // console.log(i / 8)
-  }
+
   return this
 }
 
@@ -70,13 +63,13 @@ Sha512.prototype.digest = function (enc) {
   this.finalized = true
 
   freeList.push(this.pointer)
-  console.log(hexSlice(wasm.memory, 576, 128))
+  console.log(hexSlice(wasm.memory, 704 + 696, 256))
+  console.log(hexSlice(wasm.memory, 704, 128))
 
-  wasm.exports.sha512_pad(576)
-  console.log(hexSlice(wasm.memory, 576, 128))
+  wasm.exports.sha512_pad(704)
+  console.log(hexSlice(wasm.memory, 704, 128))
 
-  console.log(hexSlice(wasm.memory, 1272, 128))
-  wasm.exports.sha512_compress(576)
+  wasm.exports.sha512_compress(704)
   // console.log(wasm.memory.subarray(this.pointer, this.pointer + 32), head, this.pointer)
 
 
@@ -84,7 +77,7 @@ Sha512.prototype.digest = function (enc) {
   //   return wasm.memory.slice(this.pointer, this.pointer + 32)
   // }
 
-  return int32reverse(wasm.memory, 0, 64)
+  return int64reverse(wasm.memory, 0, 64)
   if (enc === 'hex') {
     return hexSlice(wasm.memory, 0, 32)
   }
@@ -122,7 +115,7 @@ function formatInput (input) {
   const inputArray = new Uint32Array(Math.ceil(input.length / 4))
 
   const buf = Buffer.alloc(inputArray.byteLength)
-  buf.set(Buffer.from(input), 0)
+  buf.set(Buffer.from(input, 'utf8'), 0)
 
   let i = 0
 
@@ -136,14 +129,14 @@ function formatInput (input) {
   ]
 }
 
-function int32reverse (buf, start, len) {
+function int64reverse (buf, start, len) {
   var str = ''
   var chars = []
 
   for (let i = 0; i < len; i++) {
     chars.push(toHex(buf[start + i]))
 
-    if ((i + 1) % 4 === 0) {
+    if ((i + 1) % 8 === 0) {
       str += chars.reverse().join('')
       chars = []
     }
