@@ -1,5 +1,5 @@
 const assert = require('nanoassert')
-const wasm = require('./sha512')({
+const wasm = require(`./${process.argv[2]}`)({
   imports: {
     debug: {
       log (...args) {
@@ -43,13 +43,14 @@ function Sha512 () {
 }
 
 Sha512.prototype.update = function (input) {
+
   let [ inputBuf, length ] = formatInput(input)
   assert(this.finalized === false, 'Hash instance finalized')
   assert(inputBuf instanceof Uint8Array, 'input must be Uint8Array or Buffer')
 
   if (head + input.length > wasm.memory.length) wasm.realloc(head + input.length)
-  wasm.memory.set(inputBuf, head)
 
+  wasm.memory.set(inputBuf, head)
   wasm.exports.sha512_update(this.pointer, head, head + length)
 
   head += length
@@ -63,12 +64,8 @@ Sha512.prototype.digest = function (enc) {
   this.finalized = true
 
   freeList.push(this.pointer)
-  console.log(hexSlice(wasm.memory, 704 + 696, 256))
-  console.log(hexSlice(wasm.memory, 704, 128))
-
+  
   wasm.exports.sha512_pad(704)
-  console.log(hexSlice(wasm.memory, 704, 128))
-
   wasm.exports.sha512_compress(704)
   // console.log(wasm.memory.subarray(this.pointer, this.pointer + 32), head, this.pointer)
 
