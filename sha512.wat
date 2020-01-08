@@ -139,7 +139,7 @@
         (i64.store offset=120 (i32.add (get_local $ptr) (i32.const 704)) (i64.const 0))
 
         (i32.store offset=832 (get_local $ptr) (i32.const 0xffffffff))
-
+        (i32.store offset=836 (get_local $ptr) (i32.const 0))
         (i32.store offset=840 (get_local $ptr) (i32.const 0)))
 
     (func $Ch (param $x i64) (param $y i64) (param $z i64)
@@ -198,23 +198,25 @@
 
     (func $sha512_update (export "sha512_update") (param $ctx i32) (param $input i32) (param $input_end i32)
         (local $i i32)  
-        (local $block_end i32)
+        (local $block_position i32)
 
         (if (i32.eq (i32.load offset=128 (get_local $ctx)) (i32.const 0xffffffff))
             (then (i32.store offset=128 (get_local $ctx) (get_local $input))))
               
         (i32.store offset=132 (get_local $ctx) (get_local $input_end))
-    
+
+        (set_local $block_position (i32.load offset=136 (get_local $ctx)))
+
+        ;; need to keep track of where we are in block, idea is that we fill block to 128bytes then hash.
         (set_local $i (i32.const 7))
-        (set_local $block_end (i32.const 135))
           
         (block $end
             (loop $start
                 (br_if $end (i32.eq (get_local $input) (get_local $input_end)))
-                  
-                (if (i32.eq (get_local $i) (get_local $block_end))
+                
+                (if (i32.eq (get_local $block_position) (i32.const 128))
                     (then
-                        (set_local $block_end (i32.add (get_local $block_end) (i32.const 128)))
+                        (set_local $block_position (i32.const 0))
 
                         (call $sha512_compress (get_local $ctx))
                         (br $start)))
@@ -227,9 +229,11 @@
                 (if (i32.eq (i32.rem_u (get_local $i) (i32.const 8)) (i32.const 7))
                     (then
                         (set_local $i (i32.add (get_local $i) (i32.const 16)))))
-                (call $i32.log (get_local $i))
+                (set_local $block_position (i32.add (get_local $block_position) (i32.const 1)))
 
-                (br $start))))
+                (br $start)))
+
+        (i32.store offset=136 (get_local $ctx) (get_local $block_position)))
 
     (func $sha512_pad (export "sha512_pad") (param $ctx i32)
         (local $input_length i64)
@@ -246,16 +250,27 @@
                 (i32.mul
                     (i32.sub (get_local $input_end) (get_local $input_start))
                     (i32.const 8))))
-                
+        (call $i32.log (get_local $input_start))
+        (call $i32.log (get_local $input_end))
+        (call $i64.log (get_local $input_length))
+        
         (i32.store8 (get_local $input_end) (i32.const 0x80))
         (set_local $input_end (i32.add (get_local $input_end) (i32.const 1)))
 
+        (call $i64.log (i64.load offset=0 (i32.const 0)))
+        (call $i64.log (i64.load offset=8 (i32.const 0)))
+        (call $i64.log (i64.load offset=16 (i32.const 0)))
+        (call $i64.log (i64.load offset=24 (i32.const 0)))
+        (call $i64.log (i64.load offset=32 (i32.const 0)))
+        (call $i64.log (i64.load offset=40 (i32.const 0)))
+        (call $i64.log (i64.load offset=48 (i32.const 0)))
+        (call $i64.log (i64.load offset=56 (i32.const 0)))
 
         (block $pad_end
             (loop $pad
                 (br_if $pad_end (i32.eq (i32.rem_u (i32.sub (get_local $input_end) (get_local $input)) (i32.const 128)) (i32.const 112)))
                 (set_local $input_end (i32.add (get_local $input_end) (i32.const 1)))
-                  
+                
                 (i64.store8 (get_local $input_end) (i64.const 0))
                 (br $pad)))
 
@@ -270,7 +285,7 @@
         (i64.store8 offset=15 (get_local $input_end) (i64.shr_u (get_local $input_length) (i64.const 0)))
         
         (set_local $input_end (i32.add (get_local $input_end) (i32.const 16)))
-
+        (i32.store offset=136 (get_local $ctx) (i32.const 0x7fffffff))
         (call $sha512_update (get_local $ctx) (get_local $input_start) (get_local $input_end)))
           
     (func $sha512_compress (export "sha512_compress") (param $mem i32)
@@ -315,6 +330,15 @@
         (local $w72 i64) (local $w73 i64) (local $w74 i64) (local $w75 i64) 
         (local $w76 i64) (local $w77 i64) (local $w78 i64) (local $w79 i64)
         
+        (call $i64.log (i64.load offset=0 (i32.const 0)))
+        (call $i64.log (i64.load offset=8 (i32.const 0)))
+        (call $i64.log (i64.load offset=16 (i32.const 0)))
+        (call $i64.log (i64.load offset=24 (i32.const 0)))
+        (call $i64.log (i64.load offset=32 (i32.const 0)))
+        (call $i64.log (i64.load offset=40 (i32.const 0)))
+        (call $i64.log (i64.load offset=48 (i32.const 0)))
+        (call $i64.log (i64.load offset=56 (i32.const 0)))
+
         (set_local $w0 (i64.load offset=0 (get_local $mem)))
         (set_local $w1 (i64.load offset=8 (get_local $mem)))
         (set_local $w2 (i64.load offset=16 (get_local $mem)))
@@ -331,6 +355,25 @@
         (set_local $w13 (i64.load offset=104 (get_local $mem)))
         (set_local $w14 (i64.load offset=112 (get_local $mem)))
         (set_local $w15 (i64.load offset=120 (get_local $mem)))
+
+        (call $i32.log (i32.const 0))
+
+        (call $i64.log (get_local $w0 ))
+        (call $i64.log (get_local $w1 ))
+        (call $i64.log (get_local $w2 ))
+        (call $i64.log (get_local $w3 ))
+        (call $i64.log (get_local $w4 ))
+        (call $i64.log (get_local $w5 ))
+        (call $i64.log (get_local $w6 ))
+        (call $i64.log (get_local $w7 ))
+        (call $i64.log (get_local $w8 ))
+        (call $i64.log (get_local $w9 ))
+        (call $i64.log (get_local $w10))
+        (call $i64.log (get_local $w11))
+        (call $i64.log (get_local $w12))
+        (call $i64.log (get_local $w13))
+        (call $i64.log (get_local $w14))
+        (call $i64.log (get_local $w15))
        
         (set_local $w16 (i64.add (i64.add (i64.add (call $sig1 (get_local $w14)) (get_local $w9)) (call $sig0 (get_local $w1)) (get_local $w0))))
         (set_local $w17 (i64.add (i64.add (i64.add (call $sig1 (get_local $w15)) (get_local $w10)) (call $sig0 (get_local $w2)) (get_local $w1))))
@@ -3686,7 +3729,7 @@
 
         ;; a <- T1 + T2
         (set_local $a (i64.add (get_local $T1) (get_local $T2)))
- 
+
         ;; HASH COMPLETE FOR MESSAGE BLOCK
         ;; store hash values
         (i64.store offset=0  (i32.const 0) (i64.add (i64.load offset=0  (i32.const 0)) (get_local $a)))
