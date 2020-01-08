@@ -1,5 +1,5 @@
 const assert = require('nanoassert')
-const wasm = require(`./${process.argv[2]}`)({
+const wasm = require('./sha512.js')({
   imports: {
     debug: {
       log (...args) {
