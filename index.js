@@ -51,6 +51,7 @@ Sha512.prototype.update = function (input) {
   if (head + input.length > wasm.memory.length) wasm.realloc(head + input.length)
 
   wasm.memory.set(inputBuf, head)
+  // console.log(this.pointer, head)
   wasm.exports.sha512_update(this.pointer, head, head + length)
 
   head += length
@@ -66,6 +67,7 @@ Sha512.prototype.digest = function (enc) {
   freeList.push(this.pointer)
   
   wasm.exports.sha512_pad(704)
+  // console.log(hexSlice(wasm.memory, 1400, 128))
   wasm.exports.sha512_compress(704)
   // console.log(wasm.memory.subarray(this.pointer, this.pointer + 32), head, this.pointer)
 
@@ -107,6 +109,9 @@ Sha512.prototype.ready = Sha512.ready
 function noop () {}
 
 function formatInput (input) {
+  const value = new Uint8Array(Buffer.from(input))
+  return [value, value.byteLength]
+
   if (input instanceof Uint8Array) return input
 
   const inputArray = new Uint32Array(Math.ceil(input.length / 4))

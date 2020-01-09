@@ -223,22 +223,34 @@
                 (br_if $end (i32.eq (get_local $input) (get_local $input_end)))
                 (if (i32.eq (get_local $block_position) (i32.const 128))
                     (then
-                        (set_local $i (i32.const 7))
+                        ;; (set_local $i (i32.const 7))
                         (set_local $block_position (i32.const 0))
 
                         (call $sha512_compress (get_local $ctx))
                         (br $start)))
-        
-                (i64.store8 (i32.add (get_local $ctx) (get_local $i)) (i64.load8_u (get_local $input)))
-                
-                (set_local $i (i32.sub (get_local $i) (i32.const 1)))
-                (set_local $input (i32.add (get_local $input) (i32.const 1)))
-                (set_local $block_position (i32.add (get_local $block_position) (i32.const 1)))
-                
-                (if (i32.eq (i32.rem_u (get_local $i) (i32.const 8)) (i32.const 7))
-                    (then
-                        (set_local $i (i32.add (get_local $i) (i32.const 16)))))
 
+                (get_local $block_position)
+                (get_local $ctx)
+                (i32.add)
+                (i64.load8_u (i32.add (i32.const 7) (get_local $input)))
+                (i64.shl (i64.load8_u (i32.add (i32.const 6) (get_local $input))) (i64.const 8))
+                (i64.or)
+                (i64.shl (i64.load8_u (i32.add (i32.const 5) (get_local $input))) (i64.const 16))
+                (i64.or)
+                (i64.shl (i64.load8_u (i32.add (i32.const 4) (get_local $input))) (i64.const 24))
+                (i64.or)
+                (i64.shl (i64.load8_u (i32.add (i32.const 3) (get_local $input))) (i64.const 32))
+                (i64.or)
+                (i64.shl (i64.load8_u (i32.add (i32.const 2) (get_local $input))) (i64.const 40))
+                (i64.or)
+                (i64.shl (i64.load8_u (i32.add (i32.const 1) (get_local $input))) (i64.const 48))
+                (i64.or)
+                (i64.shl (i64.load8_u (get_local $input)) (i64.const 56))
+                (i64.or)
+                (i64.store)
+                
+                (set_local $input (i32.add (get_local $input) (i32.const 8)))
+                (set_local $block_position (i32.add (get_local $block_position) (i32.const 8)))
                 (br $start))))
 
     (func $sha512_pad (export "sha512_pad") (param $ctx i32)
@@ -405,6 +417,23 @@
         (set_local $w78 (i64.add (i64.add (i64.add (i64.xor (i64.xor (i64.rotr (get_local $w76) (i64.const 19)) (i64.rotr (get_local $w76) (i64.const 61))) (i64.shr_u (get_local $w76) (i64.const 6))) (get_local $w71)) (i64.xor (i64.xor (i64.rotr (get_local $w63) (i64.const 1)) (i64.rotr (get_local $w63) (i64.const 8))) (i64.shr_u (get_local $w63) (i64.const 7))) (get_local $w62))))
         (set_local $w79 (i64.add (i64.add (i64.add (i64.xor (i64.xor (i64.rotr (get_local $w77) (i64.const 19)) (i64.rotr (get_local $w77) (i64.const 61))) (i64.shr_u (get_local $w77) (i64.const 6))) (get_local $w72)) (i64.xor (i64.xor (i64.rotr (get_local $w64) (i64.const 1)) (i64.rotr (get_local $w64) (i64.const 8))) (i64.shr_u (get_local $w64) (i64.const 7))) (get_local $w63))))
 
+        ;; (call $i64.log (get_local $w0 ))
+        ;; (call $i64.log (get_local $w1 ))
+        ;; (call $i64.log (get_local $w2 ))
+        ;; (call $i64.log (get_local $w3 ))
+        ;; (call $i64.log (get_local $w4 ))
+        ;; (call $i64.log (get_local $w5 ))
+        ;; (call $i64.log (get_local $w6 ))
+        ;; (call $i64.log (get_local $w7 ))
+        ;; (call $i64.log (get_local $w8 ))
+        ;; (call $i64.log (get_local $w9 ))
+        ;; (call $i64.log (get_local $w10))
+        ;; (call $i64.log (get_local $w11))
+        ;; (call $i64.log (get_local $w12))
+        ;; (call $i64.log (get_local $w13))
+        ;; (call $i64.log (get_local $w14))
+        ;; (call $i64.log (get_local $w15))
+
         ;; load previous hash state into registers
         (set_local $a (i64.load offset=0 (i32.const 0)))
         (set_local $b (i64.load offset=8 (i32.const 0)))
@@ -415,23 +444,6 @@
         (set_local $g (i64.load offset=48 (i32.const 0)))
         (set_local $h (i64.load offset=56 (i32.const 0)))
 
-        (call $i64.log (get_local $w0 ))
-        (call $i64.log (get_local $w1 ))
-        (call $i64.log (get_local $w2 ))
-        (call $i64.log (get_local $w3 ))
-        (call $i64.log (get_local $w4 ))
-        (call $i64.log (get_local $w5 ))
-        (call $i64.log (get_local $w6 ))
-        (call $i64.log (get_local $w7 ))
-        (call $i64.log (get_local $w8 ))
-        (call $i64.log (get_local $w9 ))
-        (call $i64.log (get_local $w10))
-        (call $i64.log (get_local $w11))
-        (call $i64.log (get_local $w12))
-        (call $i64.log (get_local $w13))
-        (call $i64.log (get_local $w14))
-        (call $i64.log (get_local $w15))
-
         ;; ROUND 0
 
         ;; precompute intermediate values
@@ -439,9 +451,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K0 + W0
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w0)) (i64.load offset=0 (i32.const 64))))
@@ -480,9 +499,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K1 + W1
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w1)) (i64.load offset=8 (i32.const 64))))
@@ -521,9 +547,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K2 + W2
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w2)) (i64.load offset=16 (i32.const 64))))
@@ -562,9 +595,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K3 + W3
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w3)) (i64.load offset=24 (i32.const 64))))
@@ -603,9 +643,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K4 + W4
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w4)) (i64.load offset=32 (i32.const 64))))
@@ -644,9 +691,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K5 + W5
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w5)) (i64.load offset=40 (i32.const 64))))
@@ -685,9 +739,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K6 + W6
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w6)) (i64.load offset=48 (i32.const 64))))
@@ -726,9 +787,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K7 + W7
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w7)) (i64.load offset=56 (i32.const 64))))
@@ -767,9 +835,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K8 + W8
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w8)) (i64.load offset=64 (i32.const 64))))
@@ -808,9 +883,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K9 + W9
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w9)) (i64.load offset=72 (i32.const 64))))
@@ -849,9 +931,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K10 + W10
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w10)) (i64.load offset=80 (i32.const 64))))
@@ -890,9 +979,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K11 + W11
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w11)) (i64.load offset=88 (i32.const 64))))
@@ -931,9 +1027,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K12 + W12
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w12)) (i64.load offset=96 (i32.const 64))))
@@ -972,9 +1075,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K13 + W13
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w13)) (i64.load offset=104 (i32.const 64))))
@@ -1013,9 +1123,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K14 + W14
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w14)) (i64.load offset=112 (i32.const 64))))
@@ -1054,9 +1171,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K15 + W15
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w15)) (i64.load offset=120 (i32.const 64))))
@@ -1095,9 +1219,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K16 + W16
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w16)) (i64.load offset=128 (i32.const 64))))
@@ -1136,9 +1267,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K17 + W17
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w17)) (i64.load offset=136 (i32.const 64))))
@@ -1177,9 +1315,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K18 + W18
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w18)) (i64.load offset=144 (i32.const 64))))
@@ -1218,9 +1363,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K19 + W19
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w19)) (i64.load offset=152 (i32.const 64))))
@@ -1259,9 +1411,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K20 + W20
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w20)) (i64.load offset=160 (i32.const 64))))
@@ -1300,9 +1459,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K21 + W21
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w21)) (i64.load offset=168 (i32.const 64))))
@@ -1341,9 +1507,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K22 + W22
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w22)) (i64.load offset=176 (i32.const 64))))
@@ -1382,9 +1555,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K23 + W23
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w23)) (i64.load offset=184 (i32.const 64))))
@@ -1423,9 +1603,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K24 + W24
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w24)) (i64.load offset=192 (i32.const 64))))
@@ -1464,9 +1651,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K25 + W25
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w25)) (i64.load offset=200 (i32.const 64))))
@@ -1505,9 +1699,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K26 + W26
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w26)) (i64.load offset=208 (i32.const 64))))
@@ -1546,9 +1747,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K27 + W27
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w27)) (i64.load offset=216 (i32.const 64))))
@@ -1587,9 +1795,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K28 + W28
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w28)) (i64.load offset=224 (i32.const 64))))
@@ -1628,9 +1843,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K29 + W29
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w29)) (i64.load offset=232 (i32.const 64))))
@@ -1669,9 +1891,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K30 + W30
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w30)) (i64.load offset=240 (i32.const 64))))
@@ -1710,9 +1939,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K31 + W31
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w31)) (i64.load offset=248 (i32.const 64))))
@@ -1751,9 +1987,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K32 + W32
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w32)) (i64.load offset=256 (i32.const 64))))
@@ -1792,9 +2035,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K33 + W33
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w33)) (i64.load offset=264 (i32.const 64))))
@@ -1833,9 +2083,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K34 + W34
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w34)) (i64.load offset=272 (i32.const 64))))
@@ -1874,9 +2131,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K35 + W35
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w35)) (i64.load offset=280 (i32.const 64))))
@@ -1915,9 +2179,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K36 + W36
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w36)) (i64.load offset=288 (i32.const 64))))
@@ -1956,9 +2227,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K37 + W37
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w37)) (i64.load offset=296 (i32.const 64))))
@@ -1997,9 +2275,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K38 + W38
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w38)) (i64.load offset=304 (i32.const 64))))
@@ -2038,9 +2323,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K39 + W39
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w39)) (i64.load offset=312 (i32.const 64))))
@@ -2079,9 +2371,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K40 + W40
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w40)) (i64.load offset=320 (i32.const 64))))
@@ -2120,9 +2419,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K41 + W41
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w41)) (i64.load offset=328 (i32.const 64))))
@@ -2161,9 +2467,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K42 + W42
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w42)) (i64.load offset=336 (i32.const 64))))
@@ -2202,9 +2515,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K43 + W43
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w43)) (i64.load offset=344 (i32.const 64))))
@@ -2243,9 +2563,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K44 + W44
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w44)) (i64.load offset=352 (i32.const 64))))
@@ -2284,9 +2611,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K45 + W45
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w45)) (i64.load offset=360 (i32.const 64))))
@@ -2325,9 +2659,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K46 + W46
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w46)) (i64.load offset=368 (i32.const 64))))
@@ -2366,9 +2707,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K47 + W47
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w47)) (i64.load offset=376 (i32.const 64))))
@@ -2407,9 +2755,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K48 + W48
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w48)) (i64.load offset=384 (i32.const 64))))
@@ -2448,9 +2803,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K49 + W49
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w49)) (i64.load offset=392 (i32.const 64))))
@@ -2489,9 +2851,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K50 + W50
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w50)) (i64.load offset=400 (i32.const 64))))
@@ -2530,9 +2899,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K51 + W51
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w51)) (i64.load offset=408 (i32.const 64))))
@@ -2571,9 +2947,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K52 + W52
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w52)) (i64.load offset=416 (i32.const 64))))
@@ -2612,9 +2995,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K53 + W53
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w53)) (i64.load offset=424 (i32.const 64))))
@@ -2653,9 +3043,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K54 + W54
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w54)) (i64.load offset=432 (i32.const 64))))
@@ -2694,9 +3091,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K55 + W55
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w55)) (i64.load offset=440 (i32.const 64))))
@@ -2735,9 +3139,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K56 + W56
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w56)) (i64.load offset=448 (i32.const 64))))
@@ -2776,9 +3187,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K57 + W57
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w57)) (i64.load offset=456 (i32.const 64))))
@@ -2817,9 +3235,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K58 + W58
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w58)) (i64.load offset=464 (i32.const 64))))
@@ -2858,9 +3283,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K59 + W59
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w59)) (i64.load offset=472 (i32.const 64))))
@@ -2899,9 +3331,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K60 + W60
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w60)) (i64.load offset=480 (i32.const 64))))
@@ -2940,9 +3379,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K61 + W61
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w61)) (i64.load offset=488 (i32.const 64))))
@@ -2981,9 +3427,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K62 + W62
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w62)) (i64.load offset=496 (i32.const 64))))
@@ -3022,9 +3475,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K63 + W63
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w63)) (i64.load offset=504 (i32.const 64))))
@@ -3063,9 +3523,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K64 + W64
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w64)) (i64.load offset=512 (i32.const 64))))
@@ -3104,9 +3571,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K65 + W65
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w65)) (i64.load offset=520 (i32.const 64))))
@@ -3145,9 +3619,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K66 + W66
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w66)) (i64.load offset=528 (i32.const 64))))
@@ -3186,9 +3667,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K67 + W67
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w67)) (i64.load offset=536 (i32.const 64))))
@@ -3227,9 +3715,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K68 + W68
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w68)) (i64.load offset=544 (i32.const 64))))
@@ -3268,9 +3763,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K69 + W69
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w69)) (i64.load offset=552 (i32.const 64))))
@@ -3309,9 +3811,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K70 + W70
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w70)) (i64.load offset=560 (i32.const 64))))
@@ -3350,9 +3859,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K71 + W71
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w71)) (i64.load offset=568 (i32.const 64))))
@@ -3391,9 +3907,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K72 + W72
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w72)) (i64.load offset=576 (i32.const 64))))
@@ -3432,9 +3955,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K73 + W73
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w73)) (i64.load offset=584 (i32.const 64))))
@@ -3473,9 +4003,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K74 + W74
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w74)) (i64.load offset=592 (i32.const 64))))
@@ -3514,9 +4051,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K75 + W75
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w75)) (i64.load offset=600 (i32.const 64))))
@@ -3555,9 +4099,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K76 + W76
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w76)) (i64.load offset=608 (i32.const 64))))
@@ -3596,9 +4147,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K77 + W77
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w77)) (i64.load offset=616 (i32.const 64))))
@@ -3637,9 +4195,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K78 + W78
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w78)) (i64.load offset=624 (i32.const 64))))
@@ -3678,9 +4243,16 @@
         ;; T1 = h + big_sig1(e) + ch(e, f, g) + K79 + W79
         ;; T2 = big_sig0(a) + Maj(a, b, c)
 
-        (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
-        (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+        (set_local $ch_res (call $Ch (get_local $e) (get_local $f) (get_local $g)))
+        ;; (set_local $ch_res (i64.xor (i64.and (get_local $e) (get_local $f)) (i64.and (i64.xor (get_local $e) (i64.const -1)) (get_local $g))))
+
+        (set_local $maj_res (call $Maj (get_local $a) (get_local $b) (get_local $c)))
+        ;; (set_local $maj_res (i64.xor (i64.xor (i64.and (get_local $a) (get_local $b)) (i64.and (get_local $a) (get_local $c))) (i64.and (get_local $a) (get_local $c))))
+
+        ;; (set_local $big_sig0_res (call $big_sig0 (get_local $a)))
         (set_local $big_sig0_res (i64.xor (i64.xor (i64.rotr (get_local $a) (i64.const 28)) (i64.rotr (get_local $a) (i64.const 34))) (i64.rotr (get_local $a) (i64.const 39))))
+
+        ;; (set_local $big_sig1_res (call $big_sig1 (get_local $e)))
         (set_local $big_sig1_res (i64.xor (i64.xor (i64.rotr (get_local $e) (i64.const 14)) (i64.rotr (get_local $e) (i64.const 18))) (i64.rotr (get_local $e) (i64.const 41))))
 
         (set_local $T1 (i64.add (i64.add (i64.add (i64.add (get_local $h) (get_local $ch_res)) (get_local $big_sig1_res)) (get_local $w79)) (i64.load offset=632 (i32.const 64))))
