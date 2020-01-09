@@ -196,8 +196,12 @@
             (i64.shr_u (get_local $x) (i64.const 6))))
 
     (func $sha512_update (export "sha512_update") (param $ctx i32) (param $input i32) (param $input_end i32)
-        (local $i i32)  
+        (result i32)
+
+        (local $i i32)
+        (local $ptr i32)
         (local $bytes_read i32)
+        (local $end_point i32)
         (local $block_position i32)
 
         ;; store input start index
@@ -210,21 +214,23 @@
         ;; load current block position
         (set_local $bytes_read (i32.load offset=136 (get_local $ctx)))
         (set_local $block_position (i32.rem_u (get_local $bytes_read) (i32.const 128)))
+        (set_local $end_point (i32.sub (get_local $input_end) (i32.rem_u (get_local $input_end) (i32.const 8))))
+        (set_local $ptr (get_local $input))
 
         ;; update bytes read
-        (set_local $bytes_read (i32.add (get_local $bytes_read) (i32.sub (get_local $input_end) (get_local $input))))
-        (i32.store offset=136 (get_local $ctx) (get_local $bytes_read))
+        ;; (set_local $bytes_read (i32.add (get_local $bytes_read) (i32.sub (get_local $input_end) (get_local $input))))
 
         ;; need to keep track of where we are in block, idea is that we fill block to 128bytes then hash.
         (set_local $i (i32.sub (i32.add (get_local $block_position) (i32.const 7)) (i32.mul (i32.rem_u (get_local $block_position) (i32.const 8)) (i32.const 2))))
 
         (block $end
             (loop $start
-                (br_if $end (i32.eq (get_local $input) (get_local $input_end)))
+                (br_if $end (i32.eq (get_local $ptr) (get_local $end_point)))
                 (if (i32.eq (get_local $block_position) (i32.const 128))
                     (then
                         ;; (set_local $i (i32.const 7))
                         (set_local $block_position (i32.const 0))
+                        (set_local $bytes_read (i32.add (get_local $bytes_read) (i32.const 128)))
 
                         (call $sha512_compress (get_local $ctx))
                         (br $start)))
@@ -232,67 +238,96 @@
                 (get_local $block_position)
                 (get_local $ctx)
                 (i32.add)
-                (i64.load8_u (i32.add (i32.const 7) (get_local $input)))
-                (i64.shl (i64.load8_u (i32.add (i32.const 6) (get_local $input))) (i64.const 8))
+                (i64.load8_u (i32.add (i32.const 7) (get_local $ptr)))
+                (i64.shl (i64.load8_u (i32.add (i32.const 6) (get_local $ptr))) (i64.const 8))
                 (i64.or)
-                (i64.shl (i64.load8_u (i32.add (i32.const 5) (get_local $input))) (i64.const 16))
+                (i64.shl (i64.load8_u (i32.add (i32.const 5) (get_local $ptr))) (i64.const 16))
                 (i64.or)
-                (i64.shl (i64.load8_u (i32.add (i32.const 4) (get_local $input))) (i64.const 24))
+                (i64.shl (i64.load8_u (i32.add (i32.const 4) (get_local $ptr))) (i64.const 24))
                 (i64.or)
-                (i64.shl (i64.load8_u (i32.add (i32.const 3) (get_local $input))) (i64.const 32))
+                (i64.shl (i64.load8_u (i32.add (i32.const 3) (get_local $ptr))) (i64.const 32))
                 (i64.or)
-                (i64.shl (i64.load8_u (i32.add (i32.const 2) (get_local $input))) (i64.const 40))
+                (i64.shl (i64.load8_u (i32.add (i32.const 2) (get_local $ptr))) (i64.const 40))
                 (i64.or)
-                (i64.shl (i64.load8_u (i32.add (i32.const 1) (get_local $input))) (i64.const 48))
+                (i64.shl (i64.load8_u (i32.add (i32.const 1) (get_local $ptr))) (i64.const 48))
                 (i64.or)
-                (i64.shl (i64.load8_u (get_local $input)) (i64.const 56))
+                (i64.shl (i64.load8_u (get_local $ptr)) (i64.const 56))
                 (i64.or)
                 (i64.store)
                 
-                (set_local $input (i32.add (get_local $input) (i32.const 8)))
+                (set_local $ptr (i32.add (get_local $ptr) (i32.const 8)))
                 (set_local $block_position (i32.add (get_local $block_position) (i32.const 8)))
-                (br $start))))
+                (br $start)))
 
-    (func $sha512_pad (export "sha512_pad") (param $ctx i32)
-        (local $input_length i64)
-        (local $input_start i32)
-        (local $input_end i32)
+        ;;  store block position
+        (i32.store offset=136 (get_local $ctx) (i32.add (get_local $block_position) (get_local $bytes_read)))
 
-        (set_local $input_start (i32.load offset=128 (get_local $ctx)))
-        (set_local $input_end (i32.load offset=132 (get_local $ctx)))
+        ;;  store leftover bytes and return number of bytes modulo 8
+        (i64.store (get_local $input) (i64.load (get_local $ptr)))
+        (i32.sub (get_local $input_end) (get_local $end_point)))
 
-        (set_local $input_length
+    (func $sha512_pad (export "sha512_pad") (param $ctx i32) (param $input i32) (param $leftover i32)
+        (local $length i64)
+        (local $block_position i32)
+        (local $final16 i32)
+
+        (set_local $final16 (i32.add (get_local $ctx) (i32.const 112)))
+        (set_local $length
             (i64.extend_u/i32
                 (i32.mul
-                    (i32.sub (get_local $input_end) (get_local $input_start))
+                    (i32.add (i32.load offset=136 (get_local $ctx)) (get_local $leftover))
                     (i32.const 8))))
         
-        (i32.store8 (get_local $input_end) (i32.const 0x80))
-        (set_local $input_end (i32.add (get_local $input_end) (i32.const 1)))
+        (get_local $block_position)
+        (get_local $ctx)
+        (i32.add)
+        (i64.load8_u (i32.add (i32.const 7) (get_local $input)))
+        (i64.shl (i64.load8_u (i32.add (i32.const 6) (get_local $input))) (i64.const 8))
+        (i64.or)
+        (i64.shl (i64.load8_u (i32.add (i32.const 5) (get_local $input))) (i64.const 16))
+        (i64.or)
+        (i64.shl (i64.load8_u (i32.add (i32.const 4) (get_local $input))) (i64.const 24))
+        (i64.or)
+        (i64.shl (i64.load8_u (i32.add (i32.const 3) (get_local $input))) (i64.const 32))
+        (i64.or)
+        (i64.shl (i64.load8_u (i32.add (i32.const 2) (get_local $input))) (i64.const 40))
+        (i64.or)
+        (i64.shl (i64.load8_u (i32.add (i32.const 1) (get_local $input))) (i64.const 48))
+        (i64.or)
+        (i64.shl (i64.load8_u (get_local $input)) (i64.const 56))
+        (i64.or)
+        (i64.store)
+
+        (set_local $block_position (i32.add (i32.load offset=136 (get_local $ctx)) (get_local $leftover)))
+
+        (i32.store8 (i32.add (get_local $ctx) (i32.sub (i32.add (get_local $block_position) (i32.const 7)) (i32.mul (i32.rem_u (get_local $block_position) (i32.const 8)) (i32.const 2)))) (i32.const 0x80))
+        (set_local $block_position (i32.add (get_local $block_position) (i32.const 1)))
 
         (block $pad_end
+            (block $pad_to8_end
+                (loop $pad_to8
+                    (br_if $pad_to8_end (i32.eq (i32.rem_u (get_local $block_position) (i32.const 8)) (i32.const 0)))
+                      
+                    (i64.store8 (i32.add (get_local $ctx) (get_local $block_position)) (i64.const 0))
+                    (set_local $block_position (i32.add (get_local $block_position) (i32.const 1)))
+                    (br $pad_to8)))
             (loop $pad
-                (br_if $pad_end (i32.eq (i32.rem_u (i32.sub (get_local $input_end) (get_local $input_start)) (i32.const 128)) (i32.const 112)))
-                (set_local $input_end (i32.add (get_local $input_end) (i32.const 1)))
-                  
-                (i64.store8 (get_local $input_end) (i64.const 0))
+                (br_if $pad_end (i32.eq (i32.rem_u (get_local $block_position) (i32.const 128)) (i32.const 112)))
+
+                (i64.store (i32.add (get_local $ctx) (get_local $block_position)) (i64.const 0))
+                (set_local $block_position (i32.add (get_local $block_position) (i32.const 8)))
                 (br $pad)))
 
-        (i64.store offset=0 (get_local $input_end) (i64.const 0))
-        (i64.store8 offset=8 (get_local $input_end) (i64.shr_u (get_local $input_length) (i64.const 56)))
-        (i64.store8 offset=9 (get_local $input_end) (i64.shr_u (get_local $input_length) (i64.const 48)))
-        (i64.store8 offset=10 (get_local $input_end) (i64.shr_u (get_local $input_length) (i64.const 40)))
-        (i64.store8 offset=11 (get_local $input_end) (i64.shr_u (get_local $input_length) (i64.const 32)))
-        (i64.store8 offset=12 (get_local $input_end) (i64.shr_u (get_local $input_length) (i64.const 24)))
-        (i64.store8 offset=13 (get_local $input_end) (i64.shr_u (get_local $input_length) (i64.const 16)))
-        (i64.store8 offset=14 (get_local $input_end) (i64.shr_u (get_local $input_length) (i64.const 8)))
-        (i64.store8 offset=15 (get_local $input_end) (i64.shr_u (get_local $input_length) (i64.const 0)))
-        
-        (set_local $input_end (i32.add (get_local $input_end) (i32.const 16)))
+        (i64.store offset=0 (get_local $final16) (i64.const 0))
+        (i64.store8 offset=8 (get_local $final16) (i64.shr_u (get_local $length) (i64.const 0)))
+        (i64.store8 offset=9 (get_local $final16) (i64.shr_u (get_local $length) (i64.const 8)))
+        (i64.store8 offset=10 (get_local $final16) (i64.shr_u (get_local $length) (i64.const 16)))
+        (i64.store8 offset=11 (get_local $final16) (i64.shr_u (get_local $length) (i64.const 24)))
+        (i64.store8 offset=12 (get_local $final16) (i64.shr_u (get_local $length) (i64.const 32)))
+        (i64.store8 offset=13 (get_local $final16) (i64.shr_u (get_local $length) (i64.const 40)))
+        (i64.store8 offset=14 (get_local $final16) (i64.shr_u (get_local $length) (i64.const 48)))
+        (i64.store8 offset=15 (get_local $final16) (i64.shr_u (get_local $length) (i64.const 56))))
 
-        ;; load padding into hash function
-        (call $sha512_update (get_local $ctx) (i32.add (get_local $input_start) (i32.load offset=136 (get_local $ctx))) (get_local $input_end)))
-          
     (func $sha512_compress (export "sha512_compress") (param $mem i32)
         ;; registers
         (local $a i64)

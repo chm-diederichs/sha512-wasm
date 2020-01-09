@@ -33,6 +33,7 @@ function Sha512 () {
 
   this.finalized = false
   this.digestLength = 64
+  this.leftover = 0
   this.pointer = freeList.pop()
 
   wasm.memory.fill(0, 0, hashLength + wordConstantsLength)
@@ -47,12 +48,13 @@ Sha512.prototype.update = function (input) {
   let [ inputBuf, length ] = formatInput(input)
   assert(this.finalized === false, 'Hash instance finalized')
   assert(inputBuf instanceof Uint8Array, 'input must be Uint8Array or Buffer')
-
   if (head + input.length > wasm.memory.length) wasm.realloc(head + input.length)
 
-  wasm.memory.set(inputBuf, head)
+  console.log(input)
+  wasm.memory.set(inputBuf, this.leftover + head)
+  console.log(input)
   // console.log(this.pointer, head)
-  wasm.exports.sha512_update(this.pointer, head, head + length)
+  this.leftover = wasm.exports.sha512_update(this.pointer, head, head + length + this.leftover)
 
   head += length
 
@@ -65,8 +67,9 @@ Sha512.prototype.digest = function (enc) {
   this.finalized = true
 
   freeList.push(this.pointer)
-  
-  wasm.exports.sha512_pad(704)
+  wasm.exports.sha512_update(704, 1400, 1407)
+  wasm.exports.sha512_pad(704, 1400, 7)
+  // console.log(hexSlice(wasm.memory, 704, 128))
   // console.log(hexSlice(wasm.memory, 1400, 128))
   wasm.exports.sha512_compress(704)
   // console.log(wasm.memory.subarray(this.pointer, this.pointer + 32), head, this.pointer)
