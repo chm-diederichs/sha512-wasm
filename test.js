@@ -2,6 +2,54 @@ const sha512 = require('./')
 const crypto = require('crypto')
 const ref = require('js-sha512').sha512
 
+console.time('sha512')
+for (let i = 0; i < 1000; i++) {
+  const hash = sha512()
+    .update('abcdefg')
+    .update('qwertyuio')
+    .update('the quck brown')
+    .update('!')
+    .update("now let's see if you can handle an exceptionally e, hopefully one that fills the block size and then some... now wouldn't that be an interesting test case, i'm sure i'd like to know the result of that. Wouldn't you?")
+    .update('the lazy dog @')
+    .update('jumped over it, hoping ^')
+    .update('!@`$%*&iii#')
+    .update('abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu')
+    .digest('hex')
+}
+console.timeEnd('sha512')
+
+console.time('js')
+for (let i = 0; i < 1000; i++) {
+  const hash = ref.create()
+    .update('abcdefg')
+    .update('qwertyuio')
+    .update('the quck brown')
+    .update('!')
+    .update("now let's see if you can handle an exceptionally e, hopefully one that fills the block size and then some... now wouldn't that be an interesting test case, i'm sure i'd like to know the result of that. Wouldn't you?")
+    .update('the lazy dog @')
+    .update('jumped over it, hoping ^')
+    .update('!@`$%*&iii#')
+    .update('abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu')
+    .digest('hex')
+}
+console.timeEnd('js')
+
+console.time('native')
+for (let i = 0; i < 1000; i++) {
+  const refHash = crypto.createHash('sha512')
+    .update('abcdefg')
+    .update('qwertyuio')
+    .update('the quck brown')
+    .update('!')
+    .update("now let's see if you can handle an exceptionally e, hopefully one that fills the block size and then some... now wouldn't that be an interesting test case, i'm sure i'd like to know the result of that. Wouldn't you?")
+    .update('the lazy dog @')
+    .update('jumped over it, hoping ^')
+    .update('!@`$%*&iii#')
+    .update('abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu')
+    .digest('hex')
+}
+console.timeEnd('native')
+
 const hash = sha512()
   .update('abcdefg')
   .update('qwertyuio')
@@ -25,6 +73,6 @@ const refHash = crypto.createHash('sha512')
   .update('!@`$%*&iii#')
   .update('abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu')
   .digest('hex')
-
+    
 console.log(hash)
 console.log(refHash)
