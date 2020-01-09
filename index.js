@@ -43,7 +43,6 @@ function Sha512 () {
 }
 
 Sha512.prototype.update = function (input) {
-
   let [ inputBuf, length ] = formatInput(input)
   assert(this.finalized === false, 'Hash instance finalized')
   assert(inputBuf instanceof Uint8Array, 'input must be Uint8Array or Buffer')
@@ -51,9 +50,9 @@ Sha512.prototype.update = function (input) {
   if (head + input.length > wasm.memory.length) wasm.realloc(head + input.length)
 
   wasm.memory.set(inputBuf, head)
-  wasm.exports.sha512_update(this.pointer, head, head + length)
+  wasm.exports.sha512_update(this.pointer, head, head + inputBuf.byteLength)
 
-  head += length
+  head += inputBuf.byteLength
 
   return this
 }
@@ -107,6 +106,7 @@ Sha512.prototype.ready = Sha512.ready
 function noop () {}
 
 function formatInput (input) {
+  // return new Uint8Array(Buffer.from(input))
   if (input instanceof Uint8Array) return input
 
   const inputArray = new Uint32Array(Math.ceil(input.length / 4))

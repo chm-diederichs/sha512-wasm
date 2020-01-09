@@ -415,6 +415,23 @@
         (set_local $g (i64.load offset=48 (i32.const 0)))
         (set_local $h (i64.load offset=56 (i32.const 0)))
 
+        (call $i64.log (get_local $w0 ))
+        (call $i64.log (get_local $w1 ))
+        (call $i64.log (get_local $w2 ))
+        (call $i64.log (get_local $w3 ))
+        (call $i64.log (get_local $w4 ))
+        (call $i64.log (get_local $w5 ))
+        (call $i64.log (get_local $w6 ))
+        (call $i64.log (get_local $w7 ))
+        (call $i64.log (get_local $w8 ))
+        (call $i64.log (get_local $w9 ))
+        (call $i64.log (get_local $w10))
+        (call $i64.log (get_local $w11))
+        (call $i64.log (get_local $w12))
+        (call $i64.log (get_local $w13))
+        (call $i64.log (get_local $w14))
+        (call $i64.log (get_local $w15))
+
         ;; ROUND 0
 
         ;; precompute intermediate values
