@@ -1,4 +1,4 @@
-const sha512 = require('./')
+const sha512 = require('./monodex.js')
 const crypto = require('crypto')
 const ref = require('js-sha512').sha512
 
@@ -36,7 +36,7 @@ const ref = require('js-sha512').sha512
 
 const refHash = crypto.createHash('sha512')
   .update('abcdefg')
-  .update('qwertyuio')
+  // .update('qwertyuio')
   // .update('the quck brown')
   // .update('!')
   // .update("now let's see if you can handle an exceptionally e, hopefully one that fills the block size and then some... now wouldn't that be an interesting test case, i'm sure i'd like to know the result of that. Wouldn't you?")
@@ -48,7 +48,7 @@ const refHash = crypto.createHash('sha512')
 
 const hash = sha512()
   .update('abcdefg')
-  .update('qwertyuio')
+  // .update('qwertyuio')
   // .update('the quck brown')
   // .update('!')
   // .update("now let's see if you can handle an exceptionally e, hopefully one that fills the block size and then some... now wouldn't that be an interesting test case, i'm sure i'd like to know the result of that. Wouldn't you?")
