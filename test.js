@@ -35,7 +35,7 @@ const ref = require('js-sha512').sha512
 // console.timeEnd('native')
 
 const refHash = crypto.createHash('sha512')
-  .update('abcdefg')
+  .update('abc')
   // .update('qwertyuio')
   // .update('the quck brown')
   // .update('!')
@@ -47,7 +47,7 @@ const refHash = crypto.createHash('sha512')
   .digest('hex')
 
 const hash = sha512()
-  .update('abcdefg')
+  .update('abc')
   // .update('qwertyuio')
   // .update('the quck brown')
   // .update('!')

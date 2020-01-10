@@ -8818,6 +8818,17 @@
             (call $i64.log (get_local $w14))
             (call $i64.log (get_local $w15))
 
+            (call $i64.log (get_local $a ))
+            (call $i64.log (get_local $b ))
+            (call $i64.log (get_local $c ))
+            (call $i64.log (get_local $d ))
+            (call $i64.log (get_local $e ))
+            (call $i64.log (get_local $f ))
+            (call $i64.log (get_local $g ))
+            (call $i64.log (get_local $h ))
+
+            (call $i32.log (i32.const 0))
+
             ;; ROUND 0
 
             ;; precompute intermediate values

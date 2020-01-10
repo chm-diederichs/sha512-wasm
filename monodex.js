@@ -73,7 +73,7 @@ Sha512.prototype.digest = function (enc) {
   console.log(hexSlice(wasm.memory, 1400, 128))
 
   freeList.push(this.pointer)
-  wasm.exports.sha512_monolith(704, 1400, 1407, 1)
+  wasm.exports.sha512_monolith(704, 1400, 1403, 1)
   console.log(hexSlice(wasm.memory, 704, 128))
   // console.log(hexSlice(wasm.memory, 1400, 128))
   // console.log(wasm.memory.subarray(this.pointer, this.pointer + 32), head, this.pointer)
