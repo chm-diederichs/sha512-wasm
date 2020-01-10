@@ -52,12 +52,12 @@ Sha512.prototype.update = function (input) {
   assert(inputBuf instanceof Uint8Array, 'input must be Uint8Array or Buffer')
   if (head + input.length > wasm.memory.length) wasm.realloc(head + input.length)
 
-  console.log(this.leftover + head)
+  // console.log(this.leftover + head)
   wasm.memory.set(inputBuf, this.leftover + head)
-  console.log(inputBuf)
-  console.log(hexSlice(wasm.memory, 1400, 128))
+  // console.log(inputBuf)
+  // console.log(hexSlice(wasm.memory, 1400, 128))
 
-  console.log(input)
+  // console.log(input)
   // console.log(this.pointer, head)
   this.leftover = wasm.exports.sha512_monolith(this.pointer, head, head + length + this.leftover, 0)
 
@@ -70,11 +70,11 @@ Sha512.prototype.digest = function (enc) {
   // console.log(wasm.memory.subarray(288, 388), 'input data')
   assert(this.finalized === false, 'Hash instance finalized')
   this.finalized = true
-  console.log(hexSlice(wasm.memory, 1400, 128))
+  // console.log(hexSlice(wasm.memory, 1400, 128))
 
   freeList.push(this.pointer)
   wasm.exports.sha512_monolith(704, 1400, 1403, 1)
-  console.log(hexSlice(wasm.memory, 704, 128))
+  // console.log(hexSlice(wasm.memory, 704, 128))
   // console.log(hexSlice(wasm.memory, 1400, 128))
   // console.log(wasm.memory.subarray(this.pointer, this.pointer + 32), head, this.pointer)
 
