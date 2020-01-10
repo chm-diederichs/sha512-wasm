@@ -405,23 +405,6 @@
         (set_local $w78 (i64.add (i64.add (i64.add (i64.xor (i64.xor (i64.rotr (get_local $w76) (i64.const 19)) (i64.rotr (get_local $w76) (i64.const 61))) (i64.shr_u (get_local $w76) (i64.const 6))) (get_local $w71)) (i64.xor (i64.xor (i64.rotr (get_local $w63) (i64.const 1)) (i64.rotr (get_local $w63) (i64.const 8))) (i64.shr_u (get_local $w63) (i64.const 7))) (get_local $w62))))
         (set_local $w79 (i64.add (i64.add (i64.add (i64.xor (i64.xor (i64.rotr (get_local $w77) (i64.const 19)) (i64.rotr (get_local $w77) (i64.const 61))) (i64.shr_u (get_local $w77) (i64.const 6))) (get_local $w72)) (i64.xor (i64.xor (i64.rotr (get_local $w64) (i64.const 1)) (i64.rotr (get_local $w64) (i64.const 8))) (i64.shr_u (get_local $w64) (i64.const 7))) (get_local $w63))))
 
-        (call $i64.log (get_local $w0 ))
-        (call $i64.log (get_local $w1 ))
-        (call $i64.log (get_local $w2 ))
-        (call $i64.log (get_local $w3 ))
-        (call $i64.log (get_local $w4 ))
-        (call $i64.log (get_local $w5 ))
-        (call $i64.log (get_local $w6 ))
-        (call $i64.log (get_local $w7 ))
-        (call $i64.log (get_local $w8 ))
-        (call $i64.log (get_local $w9 ))
-        (call $i64.log (get_local $w10))
-        (call $i64.log (get_local $w11))
-        (call $i64.log (get_local $w12))
-        (call $i64.log (get_local $w13))
-        (call $i64.log (get_local $w14))
-        (call $i64.log (get_local $w15))
-
         ;; load previous hash state into registers
         (set_local $a (i64.load offset=0 (i32.const 0)))
         (set_local $b (i64.load offset=8 (i32.const 0)))
@@ -4271,15 +4254,6 @@
 
         ;; a <- T1 + T2
         (set_local $a (i64.add (get_local $T1) (get_local $T2)))
-
-        (call $i64.log (get_local $a ))
-        (call $i64.log (get_local $b ))
-        (call $i64.log (get_local $c ))
-        (call $i64.log (get_local $d ))
-        (call $i64.log (get_local $e ))
-        (call $i64.log (get_local $f ))
-        (call $i64.log (get_local $g ))
-        (call $i64.log (get_local $h ))
 
         ;; HASH COMPLETE FOR MESSAGE BLOCK
         ;; store hash values
