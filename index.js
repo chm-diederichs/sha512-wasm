@@ -56,7 +56,7 @@ Sha512.prototype.update = function (input) {
   // console.log(this.pointer, head)
   this.leftover = wasm.exports.sha512_update(this.pointer, head, head + length + this.leftover)
 
-  head += length
+  // head += length
 
   return this
 }
