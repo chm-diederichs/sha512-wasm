@@ -4319,6 +4319,15 @@
         ;; a <- T1 + T2
         (set_local $a (i64.add (get_local $T1) (get_local $T2)))
 
+        (call $i64.log (get_local $a ))
+        (call $i64.log (get_local $b ))
+        (call $i64.log (get_local $c ))
+        (call $i64.log (get_local $d ))
+        (call $i64.log (get_local $e ))
+        (call $i64.log (get_local $f ))
+        (call $i64.log (get_local $g ))
+        (call $i64.log (get_local $h ))
+
         ;; HASH COMPLETE FOR MESSAGE BLOCK
         ;; store hash values
         (i64.store offset=0  (i32.const 0) (i64.add (i64.load offset=0  (i32.const 0)) (get_local $a)))

@@ -4686,8 +4686,8 @@
     (if (i32.eq (get_local $final) (i32.const 1))
         (then
             (call $i64.log (get_local $last_word))
-            ;; (i64.shl (i64.const 0x80) (i64.extend_u/i32 (i32.mul (i32.sub (i32.const 7) (get_local $leftover)) (i32.const 8))))
-            (i64.shl (i64.const 0x80) (i64.extend_u/i32 (i32.mul (get_local $leftover) (i32.const 8))))
+            (i64.shl (i64.const 0x80) (i64.extend_u/i32 (i32.mul (i32.sub (i32.const 7) (get_local $leftover)) (i32.const 8))))
+            ;; (i64.shl (i64.const 0x80) (i64.extend_u/i32 (i32.mul (get_local $leftover) (i32.const 8))))
             (get_local $last_word)
             (i64.or)
             (set_local $last_word)
@@ -8722,8 +8722,8 @@
 
             (call $i64.log (get_local $last_word))
             (set_local $w14 (i64.const 0))
-            (set_local $w15 (i64.const 0x3800000000000000))
-            ;; (set_local $w15 (i64.extend_u/i32 (i32.mul (get_local $bytes_read) (i32.const 8))))
+            ;; (set_local $w15 (i64.const 0x3800000000000000))
+            (set_local $w15 (i64.extend_u/i32 (i32.mul (get_local $bytes_read) (i32.const 8))))
 
             (set_local $w16 (i64.add (i64.add (i64.add (i64.xor (i64.xor (i64.rotr (get_local $w14) (i64.const 19)) (i64.rotr (get_local $w14) (i64.const 61))) (i64.shr_u (get_local $w14) (i64.const 6))) (get_local $w9)) (i64.xor (i64.xor (i64.rotr (get_local $w1) (i64.const 1)) (i64.rotr (get_local $w1) (i64.const 8))) (i64.shr_u (get_local $w1) (i64.const 7))) (get_local $w0))))
             (set_local $w17 (i64.add (i64.add (i64.add (i64.xor (i64.xor (i64.rotr (get_local $w15) (i64.const 19)) (i64.rotr (get_local $w15) (i64.const 61))) (i64.shr_u (get_local $w15) (i64.const 6))) (get_local $w10)) (i64.xor (i64.xor (i64.rotr (get_local $w2) (i64.const 1)) (i64.rotr (get_local $w2) (i64.const 8))) (i64.shr_u (get_local $w2) (i64.const 7))) (get_local $w1))))
@@ -12656,7 +12656,19 @@
             (set_local $b (get_local $a))  
 
             ;; a <- T1 + T2
-            (set_local $a (i64.add (get_local $T1) (get_local $T2)))))
+            (set_local $a (i64.add (get_local $T1) (get_local $T2)))
+            
+            (call $i64.log (i64.add (get_local $a ) (i64.const 0x6a09e667f3bcc908)))
+            (call $i64.log (get_local $b ))
+            (call $i64.log (get_local $c ))
+            (call $i64.log (get_local $d ))
+            (call $i64.log (get_local $e ))
+            (call $i64.log (get_local $f ))
+            (call $i64.log (get_local $g ))
+            (call $i64.log (get_local $h ))
+            ))
+
+            
 
     ;; HASH COMPLETE FOR MESSAGE BLOCK
     ;; store hash values
@@ -12672,14 +12684,14 @@
     ;; (call $i64.log (i64.xor (i64.shl (i64.shr_u (get_local $last_word) (i64.const 16)) (i64.const 16)) (get_local $last_word)))
     (call $i32.log (i32.const 0))
     (call $i64.log (get_local $last_word))
-    (i64.store (get_local $input) (get_local $last_word))
-    ;; (i64.store8 (get_local $input) (i64.shr_u (get_local $last_word) (i64.const 56)))
-    ;; (i64.store8 offset=1 (get_local $input) (i64.shr_u (get_local $last_word) (i64.const 48)))
-    ;; (i64.store8 offset=2 (get_local $input) (i64.shr_u (get_local $last_word) (i64.const 40)))
-    ;; (i64.store8 offset=3 (get_local $input) (i64.shr_u (get_local $last_word) (i64.const 32)))
-    ;; (i64.store8 offset=4 (get_local $input) (i64.shr_u (get_local $last_word) (i64.const 24)))
-    ;; (i64.store8 offset=5 (get_local $input) (i64.shr_u (get_local $last_word) (i64.const 16)))
-    ;; (i64.store8 offset=6 (get_local $input) (i64.shr_u (get_local $last_word) (i64.const 8)))
-    ;; (i64.store8 offset=7 (get_local $input) (get_local $last_word))
+    ;; (i64.store (get_local $input) (get_local $last_word))
+    (i64.store8 (get_local $input) (i64.shr_u (get_local $last_word) (i64.const 56)))
+    (i64.store8 offset=1 (get_local $input) (i64.shr_u (get_local $last_word) (i64.const 48)))
+    (i64.store8 offset=2 (get_local $input) (i64.shr_u (get_local $last_word) (i64.const 40)))
+    (i64.store8 offset=3 (get_local $input) (i64.shr_u (get_local $last_word) (i64.const 32)))
+    (i64.store8 offset=4 (get_local $input) (i64.shr_u (get_local $last_word) (i64.const 24)))
+    (i64.store8 offset=5 (get_local $input) (i64.shr_u (get_local $last_word) (i64.const 16)))
+    (i64.store8 offset=6 (get_local $input) (i64.shr_u (get_local $last_word) (i64.const 8)))
+    (i64.store8 offset=7 (get_local $input) (get_local $last_word))
     (get_local $leftover)))
     
