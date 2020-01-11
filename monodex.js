@@ -55,7 +55,7 @@ Sha512.prototype.update = function (input) {
   // console.log(this.leftover + head)
   wasm.memory.set(inputBuf, this.leftover + head)
   // console.log(inputBuf)
-  // console.log(hexSlice(wasm.memory, 1400, 128))
+  console.log(hexSlice(wasm.memory, 1400, 128))
 
   // console.log(input)
   // console.log(this.pointer, head)
