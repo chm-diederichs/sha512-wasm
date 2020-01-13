@@ -1,4 +1,5 @@
 const sha512 = require('./')
+const monolith = require('./monodex.js')
 const crypto = require('crypto')
 const sodium = require('sodium-native')
 const ref = require('js-sha512').sha512
