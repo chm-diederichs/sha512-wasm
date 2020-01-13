@@ -71,7 +71,25 @@ const hash = sha512()
 
 // sodiumHash.update(Buffer.from('abcdefg'))
 // sodiumHash.final(output)
-console.time('ref')
+
+const hash2 = monolith()
+  .update('abc')
+  .update('qwertyuio')
+  .update('the quck brown')
+  .update('!')
+  .update("now let's see if you can handle an exceptionally e, hopefully one that fills the block size and then some... now wouldn't that be an interesting test case, i'm sure i'd like to know the result of that. Wouldn't you?")
+  .update('the lazy dog @')
+  .update('jumped over it, hoping ^')
+  .update('!@`$%*&iii#')
+  .update('abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu')
+  .digest('hex')
+
+// const output = Buffer.alloc(sodium.crypto_hash_sha512_BYTES)
+
+// const sodiumHash = sodium.crypto_hash_sha512_instance()
+
+// sodiumHash.update(Buffer.from('abcdefg'))
+// sodiumHash.final(output)
 
 const refHash = crypto.createHash('sha512')
   .update('abc')
@@ -86,5 +104,6 @@ const refHash = crypto.createHash('sha512')
   .digest('hex')
     
 console.log(hash)
+console.log(hash2)
 console.log(refHash)
 // console.log(output.toString('hex'))
