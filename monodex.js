@@ -1,5 +1,5 @@
 const assert = require('nanoassert')
-const wasm = require('./sha512.js')({
+const wasm = require('./monolith.js')({
   imports: {
     debug: {
       log (...args) {
@@ -41,7 +41,7 @@ function Sha512 () {
 
   if (this.pointer + hashLength + wordConstantsLength > wasm.memory.length) wasm.realloc(this.pointer + 312)
   
-  wasm.exports.sha512_init(0 , this.digestLength) //(this.pointer, this.digestLength)
+  // wasm.exports.sha512_init(0 , this.digestLength) //(this.pointer, this.digestLength)
 }
 
 Sha512.prototype.update = function (input) {
@@ -52,11 +52,11 @@ Sha512.prototype.update = function (input) {
   assert(inputBuf instanceof Uint8Array, 'input must be Uint8Array or Buffer')
   if (head + input.length > wasm.memory.length) wasm.realloc(head + input.length)
 
-  console.log(input)
   wasm.memory.set(inputBuf, this.leftover + head)
-  console.log(input)
-  // console.log(this.pointer, head)
-  this.leftover = wasm.exports.sha512_update(this.pointer, head, head + length + this.leftover)
+  // console.log(inputBuf)
+
+  // console.log(input)
+  this.leftover = wasm.exports.sha512_monolith(this.pointer, head, head + length + this.leftover, 0)
 
   // head += length
 
@@ -67,13 +67,13 @@ Sha512.prototype.digest = function (enc) {
   // console.log(wasm.memory.subarray(288, 388), 'input data')
   assert(this.finalized === false, 'Hash instance finalized')
   this.finalized = true
+  // console.log(hexSlice(wasm.memory, 1400, 128))
 
   freeList.push(this.pointer)
-  wasm.exports.sha512_update(704, 1400, 1407)
-  wasm.exports.sha512_pad(704, 1400, 7)
+
+  wasm.exports.sha512_monolith(704, 1400, 1400 + this.leftover, 1)
   // console.log(hexSlice(wasm.memory, 704, 128))
   // console.log(hexSlice(wasm.memory, 1400, 128))
-  wasm.exports.sha512_compress(704)
   // console.log(wasm.memory.subarray(this.pointer, this.pointer + 32), head, this.pointer)
 
 
