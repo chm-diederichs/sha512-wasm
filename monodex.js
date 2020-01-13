@@ -52,7 +52,6 @@ Sha512.prototype.update = function (input) {
   assert(inputBuf instanceof Uint8Array, 'input must be Uint8Array or Buffer')
   if (head + input.length > wasm.memory.length) wasm.realloc(head + input.length)
 
-  // console.log(this.leftover + head)
   wasm.memory.set(inputBuf, this.leftover + head)
   // console.log(inputBuf)
 
