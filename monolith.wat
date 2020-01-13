@@ -367,7 +367,7 @@
                     (set_local $w1 (i64.load offset=72 (get_local $ctx)))
                     (set_local $w0 (i64.load offset=64 (get_local $ctx)))                
                     (br $break))
-
+                
                 (set_local $w0 (i64.load offset=64 (get_local $ctx)))
                 (br $break))
 
@@ -380,6 +380,12 @@
 
     (block $end
         (loop $start
+            (call $i32.log (get_local $ptr))
+            (call $i32.log (get_local $bytes_read))
+            (call $i32.log (i32.const 0xbeefdead))
+            (call $i64.log (get_local $w1))
+            (call $i32.log (get_local $end_point))
+
             (br_if $end (i32.eq (get_local $ptr) (get_local $end_point)))
             (if (i32.eq (get_local $block_position) (i32.const 128))
                 (then
@@ -4160,7 +4166,7 @@
                     (i64.shl (i64.load8_u (get_local $ptr)) (i64.const 56))
                     (i64.or)
                     (set_local $w0)
-                    (i64.store offset=64 (get_local $ctx) (get_local $w14))
+                    (i64.store offset=64 (get_local $ctx) (get_local $w0))
 
                     (br $break))
             
@@ -4189,7 +4195,8 @@
                 (set_local $last_word)))
 
     ;;  store block position
-    (i32.store offset=184 (get_local $ctx) (i32.add (get_local $block_position) (get_local $bytes_read)))
+    ;; (set_local $block_position (i32.add (get_local $block_position) (get_local $leftover)))
+    (i32.store offset=184 (get_local $ctx) (get_local $block_position))
 
     ;;  store leftover bytes and return number of bytes modulo 8
     (i64.store (get_local $input) (i64.load (get_local $ptr)))
@@ -4200,6 +4207,7 @@
             (get_local $last_word)
             (i64.or)
             (set_local $last_word)
+            ;; (call $i32.log (get_local $block_position))
 
             (block $break
                 (block $0
