@@ -192,14 +192,14 @@
     ;;  store inital state
     (if (i32.lt_u (get_local $bytes_read) (i32.const 128))
         (then
-            (i64.store offset=0  (i32.const 0) (i64.xor (i64.const 0x6a09e667f3bcc908) (i64.const 0)))
-            (i64.store offset=8  (i32.const 0) (i64.xor (i64.const 0xbb67ae8584caa73b) (i64.const 0)))
-            (i64.store offset=16 (i32.const 0) (i64.xor (i64.const 0x3c6ef372fe94f82b) (i64.const 0)))   
-            (i64.store offset=24 (i32.const 0) (i64.xor (i64.const 0xa54ff53a5f1d36f1) (i64.const 0)))
-            (i64.store offset=32 (i32.const 0) (i64.xor (i64.const 0x510e527fade682d1) (i64.const 0)))
-            (i64.store offset=40 (i32.const 0) (i64.xor (i64.const 0x9b05688c2b3e6c1f) (i64.const 0)))
-            (i64.store offset=48 (i32.const 0) (i64.xor (i64.const 0x1f83d9abfb41bd6b) (i64.const 0)))
-            (i64.store offset=56 (i32.const 0) (i64.xor (i64.const 0x5be0cd19137e2179) (i64.const 0)))))
+            (i64.store offset=0  (get_local $ctx) (i64.xor (i64.const 0x6a09e667f3bcc908) (i64.const 0)))
+            (i64.store offset=8  (get_local $ctx) (i64.xor (i64.const 0xbb67ae8584caa73b) (i64.const 0)))
+            (i64.store offset=16 (get_local $ctx) (i64.xor (i64.const 0x3c6ef372fe94f82b) (i64.const 0)))   
+            (i64.store offset=24 (get_local $ctx) (i64.xor (i64.const 0xa54ff53a5f1d36f1) (i64.const 0)))
+            (i64.store offset=32 (get_local $ctx) (i64.xor (i64.const 0x510e527fade682d1) (i64.const 0)))
+            (i64.store offset=40 (get_local $ctx) (i64.xor (i64.const 0x9b05688c2b3e6c1f) (i64.const 0)))
+            (i64.store offset=48 (get_local $ctx) (i64.xor (i64.const 0x1f83d9abfb41bd6b) (i64.const 0)))
+            (i64.store offset=56 (get_local $ctx) (i64.xor (i64.const 0x5be0cd19137e2179) (i64.const 0)))))
 
     (set_local $ptr (get_local $input))
     (block $break
@@ -456,15 +456,15 @@
                     (set_local $w79 (i64.add (i64.add (i64.add (i64.xor (i64.xor (i64.rotr (get_local $w77) (i64.const 19)) (i64.rotr (get_local $w77) (i64.const 61))) (i64.shr_u (get_local $w77) (i64.const 6))) (get_local $w72)) (i64.xor (i64.xor (i64.rotr (get_local $w64) (i64.const 1)) (i64.rotr (get_local $w64) (i64.const 8))) (i64.shr_u (get_local $w64) (i64.const 7))) (get_local $w63))))
 
                     ;; load previous hash state into registers
-                    (set_local $a (i64.load offset=0 (i32.const 0)))
-                    (set_local $b (i64.load offset=8 (i32.const 0)))
-                    (set_local $c (i64.load offset=16 (i32.const 0)))
-                    (set_local $d (i64.load offset=24 (i32.const 0)))
-                    (set_local $e (i64.load offset=32 (i32.const 0)))
-                    (set_local $f (i64.load offset=40 (i32.const 0)))
-                    (set_local $g (i64.load offset=48 (i32.const 0)))
-                    (set_local $h (i64.load offset=56 (i32.const 0)))
-
+                    (set_local $a (i64.load offset=0 (get_local $ctx)))
+                    (set_local $b (i64.load offset=8 (get_local $ctx)))
+                    (set_local $c (i64.load offset=16 (get_local $ctx)))
+                    (set_local $d (i64.load offset=24 (get_local $ctx)))
+                    (set_local $e (i64.load offset=32 (get_local $ctx)))
+                    (set_local $f (i64.load offset=40 (get_local $ctx)))
+                    (set_local $g (i64.load offset=48 (get_local $ctx)))
+                    (set_local $h (i64.load offset=56 (get_local $ctx)))
+                    
                     ;; ROUND 0
 
                     ;; precompute intermediate values
@@ -3825,15 +3825,15 @@
                     ;; a <- T1 + T2
                     (set_local $a (i64.add (get_local $T1) (get_local $T2)))
 
-                    ;; store hash values
-                    (i64.store offset=0  (i32.const 0) (i64.add (i64.load offset=0  (i32.const 0)) (get_local $a)))
-                    (i64.store offset=8  (i32.const 0) (i64.add (i64.load offset=8  (i32.const 0)) (get_local $b)))
-                    (i64.store offset=16 (i32.const 0) (i64.add (i64.load offset=16 (i32.const 0)) (get_local $c)))    
-                    (i64.store offset=24 (i32.const 0) (i64.add (i64.load offset=24 (i32.const 0)) (get_local $d)))
-                    (i64.store offset=32 (i32.const 0) (i64.add (i64.load offset=32 (i32.const 0)) (get_local $e)))
-                    (i64.store offset=40 (i32.const 0) (i64.add (i64.load offset=40 (i32.const 0)) (get_local $f)))
-                    (i64.store offset=48 (i32.const 0) (i64.add (i64.load offset=48 (i32.const 0)) (get_local $g)))
-                    (i64.store offset=56 (i32.const 0) (i64.add (i64.load offset=56 (i32.const 0)) (get_local $h)))))
+                    ;; store hash values i32.const 0
+                    (i64.store offset=0  (get_local $ctx) (i64.add (i64.load offset=0  (get_local $ctx)) (get_local $a)))
+                    (i64.store offset=8  (get_local $ctx) (i64.add (i64.load offset=8  (get_local $ctx)) (get_local $b)))
+                    (i64.store offset=16 (get_local $ctx) (i64.add (i64.load offset=16 (get_local $ctx)) (get_local $c)))    
+                    (i64.store offset=24 (get_local $ctx) (i64.add (i64.load offset=24 (get_local $ctx)) (get_local $d)))
+                    (i64.store offset=32 (get_local $ctx) (i64.add (i64.load offset=32 (get_local $ctx)) (get_local $e)))
+                    (i64.store offset=40 (get_local $ctx) (i64.add (i64.load offset=40 (get_local $ctx)) (get_local $f)))
+                    (i64.store offset=48 (get_local $ctx) (i64.add (i64.load offset=48 (get_local $ctx)) (get_local $g)))
+                    (i64.store offset=56 (get_local $ctx) (i64.add (i64.load offset=56 (get_local $ctx)) (get_local $h)))))
             
             (br_if $end (i32.eq (get_local $ptr) (get_local $end_point)))
 
@@ -7795,14 +7795,14 @@
                                                                             (set_local $a (i64.add (get_local $T1) (get_local $T2)))
 
                                                                             ;; store hash values
-                                                                            (i64.store offset=0  (i32.const 0) (i64.add (i64.load offset=0  (i32.const 0)) (get_local $a)))
-                                                                            (i64.store offset=8  (i32.const 0) (i64.add (i64.load offset=8  (i32.const 0)) (get_local $b)))
-                                                                            (i64.store offset=16 (i32.const 0) (i64.add (i64.load offset=16 (i32.const 0)) (get_local $c)))    
-                                                                            (i64.store offset=24 (i32.const 0) (i64.add (i64.load offset=24 (i32.const 0)) (get_local $d)))
-                                                                            (i64.store offset=32 (i32.const 0) (i64.add (i64.load offset=32 (i32.const 0)) (get_local $e)))
-                                                                            (i64.store offset=40 (i32.const 0) (i64.add (i64.load offset=40 (i32.const 0)) (get_local $f)))
-                                                                            (i64.store offset=48 (i32.const 0) (i64.add (i64.load offset=48 (i32.const 0)) (get_local $g)))
-                                                                            (i64.store offset=56 (i32.const 0) (i64.add (i64.load offset=56 (i32.const 0)) (get_local $h))))
+                                                                            (i64.store offset=0  (get_local $ctx) (i64.add (i64.load offset=0  (get_local $ctx)) (get_local $a)))
+                                                                            (i64.store offset=8  (get_local $ctx) (i64.add (i64.load offset=8  (get_local $ctx)) (get_local $b)))
+                                                                            (i64.store offset=16 (get_local $ctx) (i64.add (i64.load offset=16 (get_local $ctx)) (get_local $c)))    
+                                                                            (i64.store offset=24 (get_local $ctx) (i64.add (i64.load offset=24 (get_local $ctx)) (get_local $d)))
+                                                                            (i64.store offset=32 (get_local $ctx) (i64.add (i64.load offset=32 (get_local $ctx)) (get_local $e)))
+                                                                            (i64.store offset=40 (get_local $ctx) (i64.add (i64.load offset=40 (get_local $ctx)) (get_local $f)))
+                                                                            (i64.store offset=48 (get_local $ctx) (i64.add (i64.load offset=48 (get_local $ctx)) (get_local $g)))
+                                                                            (i64.store offset=56 (get_local $ctx) (i64.add (i64.load offset=56 (get_local $ctx)) (get_local $h))))
 
                                                                         (set_local $w0 (get_local $last_word))
                                                                         (set_local $last_word (i64.const 0)))
@@ -7915,14 +7915,14 @@
             (set_local $w79 (i64.add (i64.add (i64.add (i64.xor (i64.xor (i64.rotr (get_local $w77) (i64.const 19)) (i64.rotr (get_local $w77) (i64.const 61))) (i64.shr_u (get_local $w77) (i64.const 6))) (get_local $w72)) (i64.xor (i64.xor (i64.rotr (get_local $w64) (i64.const 1)) (i64.rotr (get_local $w64) (i64.const 8))) (i64.shr_u (get_local $w64) (i64.const 7))) (get_local $w63))))
 
             ;; load previous hash state into registers
-            (set_local $a (i64.load offset=0 (i32.const 0)))
-            (set_local $b (i64.load offset=8 (i32.const 0)))
-            (set_local $c (i64.load offset=16 (i32.const 0)))
-            (set_local $d (i64.load offset=24 (i32.const 0)))
-            (set_local $e (i64.load offset=32 (i32.const 0)))
-            (set_local $f (i64.load offset=40 (i32.const 0)))
-            (set_local $g (i64.load offset=48 (i32.const 0)))
-            (set_local $h (i64.load offset=56 (i32.const 0)))
+            (set_local $a (i64.load offset=0 (get_local $ctx)))
+            (set_local $b (i64.load offset=8 (get_local $ctx)))
+            (set_local $c (i64.load offset=16 (get_local $ctx)))
+            (set_local $d (i64.load offset=24 (get_local $ctx)))
+            (set_local $e (i64.load offset=32 (get_local $ctx)))
+            (set_local $f (i64.load offset=40 (get_local $ctx)))
+            (set_local $g (i64.load offset=48 (get_local $ctx)))
+            (set_local $h (i64.load offset=56 (get_local $ctx)))
 
             ;; ROUND 0
 
@@ -11294,14 +11294,14 @@
             ;; (call $i64.log (get_local $h ))
 
             ;; store hash values
-            (i64.store offset=0  (i32.const 0) (i64.add (i64.load offset=0  (i32.const 0)) (get_local $a)))
-            (i64.store offset=8  (i32.const 0) (i64.add (i64.load offset=8  (i32.const 0)) (get_local $b)))
-            (i64.store offset=16 (i32.const 0) (i64.add (i64.load offset=16 (i32.const 0)) (get_local $c)))    
-            (i64.store offset=24 (i32.const 0) (i64.add (i64.load offset=24 (i32.const 0)) (get_local $d)))
-            (i64.store offset=32 (i32.const 0) (i64.add (i64.load offset=32 (i32.const 0)) (get_local $e)))
-            (i64.store offset=40 (i32.const 0) (i64.add (i64.load offset=40 (i32.const 0)) (get_local $f)))
-            (i64.store offset=48 (i32.const 0) (i64.add (i64.load offset=48 (i32.const 0)) (get_local $g)))
-            (i64.store offset=56 (i32.const 0) (i64.add (i64.load offset=56 (i32.const 0)) (get_local $h)))))
+            (i64.store offset=0  (get_local $ctx) (i64.add (i64.load offset=0  (get_local $ctx)) (get_local $a)))
+            (i64.store offset=8  (get_local $ctx) (i64.add (i64.load offset=8  (get_local $ctx)) (get_local $b)))
+            (i64.store offset=16 (get_local $ctx) (i64.add (i64.load offset=16 (get_local $ctx)) (get_local $c)))    
+            (i64.store offset=24 (get_local $ctx) (i64.add (i64.load offset=24 (get_local $ctx)) (get_local $d)))
+            (i64.store offset=32 (get_local $ctx) (i64.add (i64.load offset=32 (get_local $ctx)) (get_local $e)))
+            (i64.store offset=40 (get_local $ctx) (i64.add (i64.load offset=40 (get_local $ctx)) (get_local $f)))
+            (i64.store offset=48 (get_local $ctx) (i64.add (i64.load offset=48 (get_local $ctx)) (get_local $g)))
+            (i64.store offset=56 (get_local $ctx) (i64.add (i64.load offset=56 (get_local $ctx)) (get_local $h)))))
 
     ;; HASH COMPLETE FOR MESSAGE BLOCK
 
