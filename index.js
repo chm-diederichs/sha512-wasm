@@ -66,7 +66,7 @@ Sha512.prototype.digest = function (enc) {
   freeList.push(this.pointer)
   
   wasm.exports.sha512_pad(704)
-  wasm.exports.sha512_compress(704)
+  // wasm.exports.sha512_compress(704)
   // console.log(wasm.memory.subarray(this.pointer, this.pointer + 32), head, this.pointer)
 
 
