@@ -55,10 +55,8 @@ Sha512.prototype.update = function (input) {
   // console.log(this.leftover + head)
   wasm.memory.set(inputBuf, this.leftover + head)
   // console.log(inputBuf)
-  console.log(hexSlice(wasm.memory, 1400, 128))
 
   // console.log(input)
-  console.log(head)
   this.leftover = wasm.exports.sha512_monolith(this.pointer, head, head + length + this.leftover, 0)
 
   // head += length
@@ -73,8 +71,6 @@ Sha512.prototype.digest = function (enc) {
   // console.log(hexSlice(wasm.memory, 1400, 128))
 
   freeList.push(this.pointer)
-  console.log(12345678)
-  console.log(hexSlice(wasm.memory, 1400, 128))
 
   wasm.exports.sha512_monolith(704, 1400, 1400 + this.leftover, 1)
   // console.log(hexSlice(wasm.memory, 704, 128))
