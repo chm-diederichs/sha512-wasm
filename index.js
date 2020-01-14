@@ -13,14 +13,12 @@ const wasm = require('./sha512.js')({
   }
 })
 
-let head = 704
+let head = 0
+// assetrt head % 8 === 0 to guarantee alignment
 const freeList = []
 
 module.exports = Sha512
-
 const hashLength = 64
-const wordConstantsLength = 512
-
 
 function Sha512 () {
   if (!(this instanceof Sha512)) return new Sha512()
@@ -28,33 +26,33 @@ function Sha512 () {
 
   if (!freeList.length) {
     freeList.push(head)
-    head += 696
+    head += 512
   }
 
   this.finalized = false
   this.digestLength = 64
+  this.leftover = 0
   this.pointer = freeList.pop()
+  this.result
 
-  wasm.memory.fill(0, 0, hashLength + wordConstantsLength)
+  wasm.memory.fill(0, this.pointer, this.pointer + 512)
 
-  if (this.pointer + hashLength + wordConstantsLength > wasm.memory.length) wasm.realloc(this.pointer + 312)
+  if (this.pointer + hashLength > wasm.memory.length) wasm.realloc(this.pointer + 512)
   
-  wasm.exports.sha512_init(0 , this.digestLength) //(this.pointer, this.digestLength)
+  // wasm.exports.sha512_init(0 , this.digestLength) //(this.pointer, this.digestLength)
 }
 
 Sha512.prototype.update = function (input) {
+  // assert input % 8 === 0 for alignment
 
   let [ inputBuf, length ] = formatInput(input)
   assert(this.finalized === false, 'Hash instance finalized')
   assert(inputBuf instanceof Uint8Array, 'input must be Uint8Array or Buffer')
-
   if (head + input.length > wasm.memory.length) wasm.realloc(head + input.length)
 
-  wasm.memory.set(inputBuf, head)
-  wasm.exports.sha512_update(this.pointer, head, head + length)
+  wasm.memory.set(inputBuf, this.leftover + head)
 
-  head += length
-
+  this.leftover = wasm.exports.sha512_monolith(this.pointer, head, head + length + this.leftover, 0)
   return this
 }
 
@@ -62,11 +60,11 @@ Sha512.prototype.digest = function (enc) {
   // console.log(wasm.memory.subarray(288, 388), 'input data')
   assert(this.finalized === false, 'Hash instance finalized')
   this.finalized = true
-
+  // console.log(hexSlice(wasm.memory, 1400, 128))
   freeList.push(this.pointer)
-  
-  wasm.exports.sha512_pad(704)
-  // wasm.exports.sha512_compress(704)
+  wasm.exports.sha512_monolith(this.pointer, head, head + this.leftover, 1)
+  // console.log(hexSlice(wasm.memory, 704, 128))
+  // console.log(hexSlice(wasm.memory, 1400, 128))
   // console.log(wasm.memory.subarray(this.pointer, this.pointer + 32), head, this.pointer)
 
 
@@ -74,9 +72,10 @@ Sha512.prototype.digest = function (enc) {
   //   return wasm.memory.slice(this.pointer, this.pointer + 32)
   // }
 
-  return int64reverse(wasm.memory, 0, 64)
+  this.result = int64reverse(wasm.memory, this.pointer, 64)
+  return this.result
   if (enc === 'hex') {
-    return hexSlice(wasm.memory, 0, 32)
+    return hexSlice(wasm.memory, this.pointer, 32)
   }
 
   assert(enc instanceof Uint8Array && enc.length >= 32, 'input must be Uint8Array or Buffer')
@@ -107,6 +106,9 @@ Sha512.prototype.ready = Sha512.ready
 function noop () {}
 
 function formatInput (input) {
+  const value = new Uint8Array(Buffer.from(input))
+  return [value, value.byteLength]
+
   if (input instanceof Uint8Array) return input
 
   const inputArray = new Uint32Array(Math.ceil(input.length / 4))
@@ -152,3 +154,4 @@ function toHex (n) {
   if (n < 16) return '0' + n.toString(16)
   return n.toString(16)
 }
+

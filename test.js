@@ -1,5 +1,5 @@
-const sha512 = require('./')
-const monolith = require('./monodex.js')
+// const sha512 = require('./')
+const monolith = require('./')
 const crypto = require('crypto')
 const ref = require('js-sha512').sha512
 const sodium = require('sodium-native')
@@ -59,7 +59,7 @@ const refHash = crypto.createHash('sha512')
 for (let i = 0; i < 100; i++) {  
   const buf = Buffer.alloc(2**16 * Math.random())
   sodium.randombytes_buf(buf)
-  
+
   monoHash.update(buf)
   refHash.update(buf)
 }
