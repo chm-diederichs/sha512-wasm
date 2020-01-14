@@ -34,7 +34,8 @@
 
     (local $i i32)
     (local $ptr i32)
-    (local $bytes_read i32)
+    (local $bytes_read i64)
+    (local $bytes_read_overflow i64)
     (local $end_point i32)
     (local $block_position i32)
     (local $last_word i64)
@@ -184,13 +185,14 @@
     (set_local $k79 (i64.xor (i64.const 0x6c44198c4a475817) (i64.const 0)))
 
     ;; load current block position
-    (set_local $bytes_read (i32.load offset=184 (get_local $ctx)))
-    (set_local $block_position (i32.rem_u (get_local $bytes_read) (i32.const 128)))
+    (set_local $bytes_read (i64.load offset=184 (get_local $ctx)))
+    (set_local $bytes_read_overflow (i64.load offset=192 (get_local $ctx)))
+    (set_local $block_position (i32.wrap/i64 (i64.rem_u (get_local $bytes_read) (i64.const 128))))
     (set_local $leftover (i32.rem_u (get_local $input_end) (i32.const 8)))
     (set_local $end_point (i32.sub (get_local $input_end) (get_local $leftover)))
 
     ;;  store inital state
-    (if (i32.lt_u (get_local $bytes_read) (i32.const 128))
+    (if (i64.lt_u (get_local $bytes_read) (i64.const 128))
         (then
             (i64.store offset=0  (get_local $ctx) (i64.xor (i64.const 0x6a09e667f3bcc908) (i64.const 0)))
             (i64.store offset=8  (get_local $ctx) (i64.xor (i64.const 0xbb67ae8584caa73b) (i64.const 0)))
@@ -387,7 +389,10 @@
                 (then
                     ;; (set_local $i (i32.const 7))
                     (set_local $block_position (i32.const 0))
-                    (set_local $bytes_read (i32.add (get_local $bytes_read) (i32.const 128)))
+                    (set_local $bytes_read (i64.add (get_local $bytes_read) (i64.const 128)))
+                    (if (i64.lt_u (get_local $bytes_read) (i64.const 128))
+                        (then
+                            (set_local $bytes_read_overflow (i64.add (get_local $bytes_read_overflow) (i64.const 1)))))
 
                     ;; compress
                     (set_local $w16 (i64.add (i64.add (i64.add (i64.xor (i64.xor (i64.rotr (get_local $w14) (i64.const 19)) (i64.rotr (get_local $w14) (i64.const 61))) (i64.shr_u (get_local $w14) (i64.const 6))) (get_local $w9)) (i64.xor (i64.xor (i64.rotr (get_local $w1) (i64.const 1)) (i64.rotr (get_local $w1) (i64.const 8))) (i64.shr_u (get_local $w1) (i64.const 7))) (get_local $w0))))
@@ -464,7 +469,7 @@
                     (set_local $f (i64.load offset=40 (get_local $ctx)))
                     (set_local $g (i64.load offset=48 (get_local $ctx)))
                     (set_local $h (i64.load offset=56 (get_local $ctx)))
-                    
+
                     ;; ROUND 0
 
                     ;; precompute intermediate values
@@ -3874,9 +3879,7 @@
                                                                                 (i64.or)
                                                                                 (i64.shl (i64.load8_u (get_local $ptr)) (i64.const 56))
                                                                                 (i64.or)
-                                                                                (tee_local $w15)
-                                                                                (i64.store offset=176 )
-
+                                                                                (set_local $w15)
 
                                                                                 (br $break))
                     
@@ -4304,17 +4307,21 @@
                         (set_local $last_word)
                         (br $break))))
 
-    ;;  store block position
-    ;; (set_local $block_position (i32.add (get_local $block_position) (get_local $leftover)))
+    ;;  store number of bytes read
     (get_local $ctx)
     (get_local $bytes_read)
-    (i32.const 128)
-    (i32.div_u)
-    (i32.const 128)
-    (i32.mul)
+    (i64.const 128)
+    (i64.div_u)
+    (i64.const 128)
+    (i64.mul)
     (get_local $block_position)
-    (i32.add)
-    (i32.store offset=184)
+    (i64.extend_u/i32)
+    (i64.add)
+    (i64.store offset=184)
+
+    (get_local $ctx)
+    (get_local $bytes_read_overflow)
+    (i64.store offset=192)
 
     ;;  store leftover bytes and return number of bytes modulo 8
     (i64.store (get_local $input) (i64.load (get_local $ptr)))
@@ -4329,7 +4336,10 @@
             
             ;; (call $i64.log (get_local  $w15))
             ;; (set_local $block_position (i32.add (get_local $block_position) (i32.const 8)))
-            (set_local $bytes_read (i32.add (get_local $bytes_read) (get_local $leftover)))
+            (set_local $bytes_read (i64.add (get_local $bytes_read) (i64.extend_u/i32 (get_local $leftover))))
+            (if (i64.lt_u (get_local $bytes_read) (i64.extend_u/i32 (get_local $leftover)))
+                (then
+                    (set_local $bytes_read_overflow (i64.add (get_local $bytes_read_overflow) (i64.const 1)))))
 
             (block $pad_end
                 (block $13
@@ -4425,14 +4435,14 @@
                                                                             (set_local $w79 (i64.add (i64.add (i64.add (i64.xor (i64.xor (i64.rotr (get_local $w77) (i64.const 19)) (i64.rotr (get_local $w77) (i64.const 61))) (i64.shr_u (get_local $w77) (i64.const 6))) (get_local $w72)) (i64.xor (i64.xor (i64.rotr (get_local $w64) (i64.const 1)) (i64.rotr (get_local $w64) (i64.const 8))) (i64.shr_u (get_local $w64) (i64.const 7))) (get_local $w63))))                                                                            
 
                                                                             ;; load previous hash state into registers
-                                                                            (set_local $a (i64.load offset=0 (i32.const 0)))
-                                                                            (set_local $b (i64.load offset=8 (i32.const 0)))
-                                                                            (set_local $c (i64.load offset=16 (i32.const 0)))
-                                                                            (set_local $d (i64.load offset=24 (i32.const 0)))
-                                                                            (set_local $e (i64.load offset=32 (i32.const 0)))
-                                                                            (set_local $f (i64.load offset=40 (i32.const 0)))
-                                                                            (set_local $g (i64.load offset=48 (i32.const 0)))
-                                                                            (set_local $h (i64.load offset=56 (i32.const 0)))
+                                                                            (set_local $a (i64.load offset=0 (get_local $ctx)))
+                                                                            (set_local $b (i64.load offset=8 (get_local $ctx)))
+                                                                            (set_local $c (i64.load offset=16 (get_local $ctx)))
+                                                                            (set_local $d (i64.load offset=24 (get_local $ctx)))
+                                                                            (set_local $e (i64.load offset=32 (get_local $ctx)))
+                                                                            (set_local $f (i64.load offset=40 (get_local $ctx)))
+                                                                            (set_local $g (i64.load offset=48 (get_local $ctx)))
+                                                                            (set_local $h (i64.load offset=56 (get_local $ctx)))
 
                                                                             ;; ROUND 0
 
@@ -7845,9 +7855,22 @@
 
                     (set_local $w13 (get_local $last_word))
                     (set_local $last_word (i64.const 0)))
+            
+            ;; load upper limb of 128bit length
+            (get_local $bytes_read)
+            (i64.const 56)
+            (i64.shr_u)
+            (i64.const 8)
+            (i64.mul)
+            (i64.const 8)
+            (i64.shr_u)
+            (get_local $bytes_read_overflow)
+            (i64.const 8)
+            (i64.mul)
+            (i64.add)
+            (set_local $w14)
 
-            (set_local $w14 (i64.const 0))
-            (set_local $w15 (i64.extend_u/i32 (i32.mul (get_local $bytes_read) (i32.const 8))))
+            (set_local $w15 (i64.mul (get_local $bytes_read) (i64.const 8)))
 
             (set_local $w16 (i64.add (i64.add (i64.add (i64.xor (i64.xor (i64.rotr (get_local $w14) (i64.const 19)) (i64.rotr (get_local $w14) (i64.const 61))) (i64.shr_u (get_local $w14) (i64.const 6))) (get_local $w9)) (i64.xor (i64.xor (i64.rotr (get_local $w1) (i64.const 1)) (i64.rotr (get_local $w1) (i64.const 8))) (i64.shr_u (get_local $w1) (i64.const 7))) (get_local $w0))))
             (set_local $w17 (i64.add (i64.add (i64.add (i64.xor (i64.xor (i64.rotr (get_local $w15) (i64.const 19)) (i64.rotr (get_local $w15) (i64.const 61))) (i64.shr_u (get_local $w15) (i64.const 6))) (get_local $w10)) (i64.xor (i64.xor (i64.rotr (get_local $w2) (i64.const 1)) (i64.rotr (get_local $w2) (i64.const 8))) (i64.shr_u (get_local $w2) (i64.const 7))) (get_local $w1))))

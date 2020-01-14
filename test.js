@@ -1,138 +1,68 @@
 const sha512 = require('./')
 const monolith = require('./monodex.js')
 const crypto = require('crypto')
-// const sodium = require('sodium-native')
 const ref = require('js-sha512').sha512
+const sodium = require('sodium-native')
 
+// timing benchmark
+{
+  const buf = Buffer.alloc(8192)
+  sodium.randombytes_buf(buf)
 
-// console.time('sha512')
-// for (let i = 0; i < 100; i++) {
-//   const hash = sha512()
-//     // .update('abc')
-//     // .update('qwertyuio')
-//     // .update('the quck brown')
-//     // .update('!')
-//     .update("now let's see if you can handle an exceptionally e, hopefully one that fills the block size and then some... now wouldn't that be an interesting test case, i'm sure i'd like to know the result of that. Wouldn't you?")
-//     .update('the lazy dog @')
-//     .update('jumped over it, hoping ^')
-//     .update('!@`$%*&iii#')
-//     .update('abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu')
-//     .digest('hex')
-// }
-// console.timeEnd('sha512')
+  const monoHash = monolith()
+  const jsHash = ref.create()
+  const refHash = crypto.createHash('sha512') 
 
-// console.time('monolith')
-// for (let i = 0; i < 100; i++) {
-//   const hash = monolith()
-//     // .update('abc')
-//     // .update('qwertyuio')
-//     // .update('the quck brown')
-//     // .update('!')
-//     .update("now let's see if you can handle an exceptionally e, hopefully one that fills the block size and then some... now wouldn't that be an interesting test case, i'm sure i'd like to know the result of that. Wouldn't you?")
-//     .update('the lazy dog @')
-//     .update('jumped over it, hoping ^')
-//     .update('!@`$%*&iii#')
-//     .update('abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu')
-//     .digest('hex')
-// }
-// console.timeEnd('monolith')
+  console.time('monolith')
+  for (let i = 0; i < 1000; i++) {
+    monoHash.update(buf)
+  }
+  const monoRes = monoHash.digest('hex')
+  console.timeEnd('monolith')
 
-// console.time('js')
-// for (let i = 0; i < 100; i++) {
-//   const hash = ref.create()
-//     // .update('abc')
-//     // .update('qwertyuio')
-//     // .update('the quck brown')
-//     // .update('!')
-//     .update("now let's see if you can handle an exceptionally e, hopefully one that fills the block size and then some... now wouldn't that be an interesting test case, i'm sure i'd like to know the result of that. Wouldn't you?")
-//     .update('the lazy dog @')
-//     .update('jumped over it, hoping ^')
-//     .update('!@`$%*&iii#')
-//     .update('abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu')
-//     .digest('hex')
-// }
-// console.timeEnd('js')
+  console.time('js')
+  for (let i = 0; i < 1000; i++) {
+    jsHash.update(buf)
+  }
+  const jsRes = jsHash.hex()
+  console.timeEnd('js')
 
-// console.time('native')
-// for (let i = 0; i < 100; i++) {
-//   const refHash = crypto.createHash('sha512')
-//     // .update('abc')
-//     // .update('qwertyuio')
-//     // .update('the quck brown')
-//     // .update('!')
-//     .update("now let's see if you can handle an exceptionally e, hopefully one that fills the block size and then some... now wouldn't that be an interesting test case, i'm sure i'd like to know the result of that. Wouldn't you?")
-//     .update('the lazy dog @')
-//     .update('jumped over it, hoping ^')
-//     .update('!@`$%*&iii#')
-//     .update('abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu')
-//     .digest('hex')
-// }
-// console.timeEnd('native')
+  console.time('native')
+  for (let i = 0; i < 1000; i++) {
+    refHash.update(buf)
+  }
+  const refRes = refHash.digest('hex')
+  console.timeEnd('native')
 
-// const hash = sha512()
-//   .update('abc')
-//   .update('qwertyuio')
-//   .update('the quck brown')
-//   .update('!')
-//   .update("now let's see if you can handle an exceptionally e, hopefully one that fills the block size and then some... now wouldn't that be an interesting test case, i'm sure i'd like to know the result of that. Wouldn't you?")
-//   .update('the lazy dog @')
-//   .update('jumped over it, hoping ^')
-//   .update('!@`$%*&iii#')
-//   .update('abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu')
-//   .digest('hex')
+  console.log('\nhashes are consistent: ', monoRes === refRes && monoRes === jsRes)
+}
 
-// // const output = Buffer.alloc(sodium.crypto_hash_sha512_BYTES)
+// naive input fuzz
+const bugs = []
 
-// // const sodiumHash = sodium.crypto_hash_sha512_instance()
+for (let i = 0; i < 100; i++) {
+  const length = Math.floor(2 ** 18 * Math.random())
+  const buf = Buffer.alloc(length)
+  sodium.randombytes_buf(buf)
+  const hash = monolith().update(buf).digest('hex')
+  const ref = crypto.createHash('sha512').update(buf).digest('hex')
 
-// // sodiumHash.update(Buffer.from('abcdefg'))
-// // sodiumHash.final(output)
+  if (hash !== ref) bugs.push(length)
+}
 
-const hash2 = monolith()
-  .update('abc')
-  .update('qwertyuio')
-  .update('the quck brown')
-  .update('!')
-  .update("now let's see if you can handle an exceptionally e, hopefully one that fills the block size and then some... now wouldn't that be an interesting test case, i'm sure i'd like to know the result of that. Wouldn't you?")
-  .update('the lazy dog @')
-  .update('jumped over it, hoping ^')
-  .update('!@`$%*&iii#')
-  .update('abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu')
+console.log('\nhashes inconsistent at lengths:', bugs, '\n')
 
-hash2.digest('hex')
+// fuzz multiple updates
+const monoHash = monolith()
+const refHash = crypto.createHash('sha512') 
 
-const hash3 = monolith()
-  .update('abc')
-  .update('qwertyuio')
-  .update('the quck brown')
-  .update('!')
-  .update("now let's see if you can handle an exceptionally e, hopefully one that fills the block size and then some... now wouldn't that be an interesting test case, i'm sure i'd like to know the result of that. Wouldn't you?")
-  .update('the lazy dog @')
-  .update('jumped over it, hoping ^')
-  .update('!@`$%*&iii#')
-  .update('abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu')
-  .digest('hex')
+for (let i = 0; i < 100; i++) {  
+  const buf = Buffer.alloc(2**16 * Math.random())
+  sodium.randombytes_buf(buf)
+  
+  monoHash.update(buf)
+  refHash.update(buf)
+}
 
-// const output = Buffer.alloc(sodium.crypto_hash_sha512_BYTES)
-
-// const sodiumHash = sodium.crypto_hash_sha512_instance()
-
-// sodiumHash.update(Buffer.from('abcdefg'))
-// sodiumHash.final(output)
-
-const refHash = crypto.createHash('sha512')
-  .update('abc')
-  .update('qwertyuio')
-  .update('the quck brown')
-  .update('!')
-  .update("now let's see if you can handle an exceptionally e, hopefully one that fills the block size and then some... now wouldn't that be an interesting test case, i'm sure i'd like to know the result of that. Wouldn't you?")
-  .update('the lazy dog @')
-  .update('jumped over it, hoping ^')
-  .update('!@`$%*&iii#')
-  .update('abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu')
-  .digest('hex')
-
-console.log(hash2)
-console.log(hash3)
-console.log(refHash)
-// console.log(output.toString('hex'))
+console.log(monoHash.digest('hex'))
+console.log(refHash.digest('hex'))
