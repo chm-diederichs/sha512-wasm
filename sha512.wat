@@ -10,7 +10,7 @@
   (func $f64.log (import "debug" "log") (param f64))
   (func $f64.log_tee (import "debug" "log_tee") (param f64) (result f64))
 
-  (memory (export "memory") 10 1000)
+  (memory (export "memory") 10 65536)
 
   ;; i64 logging by splitting into two i32 limbs
   (func $i64.log
@@ -31,6 +31,11 @@
 
   (func $sha512_monolith (export "sha512_monolith") (param $ctx i32) (param $input i32) (param $input_end i32) (param $final i32)
     (result i32)
+
+    ;; memory schema:
+    ;; [0..64] - hash state
+    ;; [64 - 184] - store words between updates
+    ;; [184 - 200] - number of bytes read across all updates (128bit)
 
     (local $i i32)
     (local $ptr i32)
@@ -377,11 +382,6 @@
                 (br $break))
 
             (br $break))
-
-    ;; update bytes read
-    ;; (set_local $bytes_read (i32.add (get_local $bytes_read) (i32.sub (get_local $input_end) (get_local $input))))
-
-    ;; need to keep track of where we are in block, idea is that we fill block to 128bytes then hash.
 
     (block $end
         (loop $start
@@ -3830,7 +3830,7 @@
                     ;; a <- T1 + T2
                     (set_local $a (i64.add (get_local $T1) (get_local $T2)))
 
-                    ;; store hash values i32.const 0
+                    ;; store hash values im between updates
                     (i64.store offset=0  (get_local $ctx) (i64.add (i64.load offset=0  (get_local $ctx)) (get_local $a)))
                     (i64.store offset=8  (get_local $ctx) (i64.add (i64.load offset=8  (get_local $ctx)) (get_local $b)))
                     (i64.store offset=16 (get_local $ctx) (i64.add (i64.load offset=16 (get_local $ctx)) (get_local $c)))    
@@ -3839,7 +3839,7 @@
                     (i64.store offset=40 (get_local $ctx) (i64.add (i64.load offset=40 (get_local $ctx)) (get_local $f)))
                     (i64.store offset=48 (get_local $ctx) (i64.add (i64.load offset=48 (get_local $ctx)) (get_local $g)))
                     (i64.store offset=56 (get_local $ctx) (i64.add (i64.load offset=56 (get_local $ctx)) (get_local $h)))))
-            
+
             (br_if $end (i32.eq (get_local $ptr) (get_local $end_point)))
 
             (block $break
@@ -4202,7 +4202,6 @@
             (set_local $block_position (i32.add (get_local $block_position) (i32.const 8)))
             (br $start)))
 
-    ;; TODO: store last word and leftover bytes
     (if (i32.ne (get_local $end_point) (get_local $input_end))
             (then
                 (block $break
@@ -4334,8 +4333,6 @@
             (set_local $last_word)
 
             
-            ;; (call $i64.log (get_local  $w15))
-            ;; (set_local $block_position (i32.add (get_local $block_position) (i32.const 8)))
             (set_local $bytes_read (i64.add (get_local $bytes_read) (i64.extend_u/i32 (get_local $leftover))))
             (if (i64.lt_u (get_local $bytes_read) (i64.extend_u/i32 (get_local $leftover)))
                 (then
@@ -11306,23 +11303,6 @@
 
             ;; a <- T1 + T2
             (set_local $a (i64.add (get_local $T1) (get_local $T2)))
-
-            ;; (call $i64.log (get_local $w0 ))
-            ;; (call $i64.log (get_local $w1 ))
-            ;; (call $i64.log (get_local $w2 ))
-            ;; (call $i64.log (get_local $w3 ))
-            ;; (call $i64.log (get_local $w4 ))
-            ;; (call $i64.log (get_local $w5 ))
-            ;; (call $i64.log (get_local $w6 ))
-            ;; (call $i64.log (get_local $w7 ))
-            ;; (call $i64.log (get_local $w8 ))
-            ;; (call $i64.log (get_local $w9 ))
-            ;; (call $i64.log (get_local $w10 ))
-            ;; (call $i64.log (get_local $w11 ))
-            ;; (call $i64.log (get_local $w12 ))
-            ;; (call $i64.log (get_local $w13 ))
-            ;; (call $i64.log (get_local $w14 ))
-            ;; (call $i64.log (get_local $w15 ))
 
             ;; store hash values
             (i64.store offset=0  (get_local $ctx) (i64.add (i64.load offset=0  (get_local $ctx)) (get_local $a)))
