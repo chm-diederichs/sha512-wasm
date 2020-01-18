@@ -18,7 +18,7 @@ let head = 0
 const freeList = []
 
 module.exports = Sha512
-const hashLength = 64
+const SHA512_BYTES = module.exports.SHA512_BYTES = 64
 
 function Sha512 () {
   if (!(this instanceof Sha512)) return new Sha512()
@@ -30,13 +30,13 @@ function Sha512 () {
   }
 
   this.finalized = false
-  this.digestLength = hashLength
+  this.digestLength = SHA512_BYTES
   this.pointer = freeList.pop()
   this.leftover
 
   wasm.memory.fill(0, this.pointer, this.pointer + 200)
 
-  if (this.pointer + hashLength > wasm.memory.length) wasm.realloc(this.pointer + 200)
+  if (this.pointer + this.digestLength > wasm.memory.length) wasm.realloc(this.pointer + 200)
 }
 
 Sha512.prototype.update = function (input, enc) {
@@ -72,17 +72,9 @@ Sha512.prototype.digest = function (enc, offset = 0) {
   freeList.push(this.pointer)
 
   wasm.memory.set(this.leftover, head)
-  // console.log(hexSlice(wasm.memory, head, 128))
-  // console.log(head)
-  
-  // console.log('before digest')
   wasm.exports.sha512_monolith(this.pointer, head, head + this.leftover.byteLength, 1)
-  // console.log('after digest')
 
-  // console.log(this.pointer, 'pointer')
-  // console.log(hexSlice(wasm.memory, this.pointer, this.digestLength))
   const resultBuf = int64reverse(wasm.memory, this.pointer, this.digestLength)
-  // console.log(resultBuf)
   
   if (!enc) {
     return resultBuf
