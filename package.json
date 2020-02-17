@@ -1,6 +1,6 @@
 {
   "name": "sha512-wasm",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "sha512 hashing algorithm implemented in WebAssembly",
   "main": "index.js",
   "scripts": {
