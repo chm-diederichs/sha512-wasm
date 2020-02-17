@@ -22,7 +22,7 @@ const SHA512_BYTES = module.exports.SHA512_BYTES = 64
 
 function Sha512 () {
   if (!(this instanceof Sha512)) return new Sha512()
-  if (!(wasm && wasm.exports)) throw new Error('WASM not loaded. Wait for Blake2b.ready(cb)')
+  if (!(wasm && wasm.exports)) throw new Error('WASM not loaded. Wait for Sha512.ready(cb)')
 
   if (!freeList.length) {
     freeList.push(head)
