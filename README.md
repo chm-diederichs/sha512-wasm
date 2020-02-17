@@ -3,6 +3,10 @@
 ```js
 const sha512 = require('sha512-wasm')
 
+if (!Sha512.SUPPORTED) {
+  console.log('WebAssembly not supported by your runtime')
+}
+
 var hash = sha512()
   .update('hello')
   .update(' ')
