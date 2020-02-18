@@ -32,7 +32,7 @@ function Sha512 () {
   this.finalized = false
   this.digestLength = SHA512_BYTES
   this.pointer = freeList.pop()
-  this.leftover
+  this.leftover = Buffer.alloc(0)
 
   wasm.memory.fill(0, this.pointer, this.pointer + 200)
 
