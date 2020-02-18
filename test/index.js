@@ -91,7 +91,7 @@ tape('crypto-browserify test vectors', function (t) {
   for (let vector of vectors) {
     const buf = Buffer.from(vector.input, 'base64')
     const hash = sha512().update(buf).digest('hex')
-    t.equal(hash, vector.hash, `failed on input ${i}`)
+    t.equal(hash, vector.hash, `input ${i}`)
     i++
   }
   t.end()
