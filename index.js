@@ -68,7 +68,8 @@ Sha512.prototype.digest = function (enc, offset = 0) {
   wasm.memory.fill(0, head, head + 16)
   wasm.exports.sha512_monolith(this.pointer, head, head, 1)
 
-  const resultBuf = int64reverse(wasm.memory, this.pointer, this.digestLength)
+  const resultBuf = Buffer.from(wasm.memory.subarray(this.pointer, this.pointer + this.digestLength))
+  // const resultBuf = int64reverse(wasm.memory, this.pointer, this.digestLength)
   
   if (!enc) {
     return resultBuf
@@ -124,9 +125,56 @@ Sha512.prototype.onetime = function (input, enc) {
 
   const overlap = this.leftover ? this.leftover.byteLength : 0
   const leftover = wasm.exports.sha512_monolith(this.pointer, head, head + length + overlap, 1)
-  const resultBuf = int64reverse(wasm.memory, this.pointer, this.digestLength)
+  const resultBuf = Buffer.from(wasm.memory.subarray(this.pointer, this.pointer + this.digestLength))
+  // const resultBuf = int64reverse(wasm.memory, this.pointer, this.digestLength)
 
   this.leftover = inputBuf.slice(inputBuf.byteLength - leftover)
+
+  if (!enc) {
+    return resultBuf
+  }
+
+  if (typeof enc === 'string') {
+    return resultBuf.toString(enc)
+  }
+
+  assert(enc instanceof Uint8Array, 'input must be Uint8Array or Buffer')
+  assert(enc.byteLength >= this.digestLength + offset, 'input must be Uint8Array or Buffer')
+
+  for (let i = 0; i < this.digestLength; i++) {
+    enc[i + offset] = resultBuf[i]
+  }
+
+  return enc
+}
+
+Sha512.prototype.double = function (input, enc) {
+  assert(this.finalized === false, 'Hash instance finalized')
+
+  if (head % 8 !== 0) head += 8 - head % 8
+  assert(head % 8 === 0, 'input should be aligned for int64')
+
+  let [ inputBuf, length ] = formatInput(input, enc)
+
+  assert(inputBuf instanceof Uint8Array, 'input must be Uint8Array or Buffer')
+
+  if (head + input.length > wasm.memory.length) wasm.realloc(head + input.length)
+
+  if (this.leftover != null) {
+    wasm.memory.set(this.leftover, head)
+    wasm.memory.set(inputBuf, this.leftover.byteLength + head)
+  } else {
+    wasm.memory.set(inputBuf, head)
+  }
+
+  // console.log(hexSlice(wasm.memory, head, 64, 'head'))
+  const overlap = this.leftover ? this.leftover.byteLength : 0
+  var leftover = wasm.exports.sha512_monolith(this.pointer, head, head + length + overlap, 1)
+  // console.log(hexSlice(wasm.memory, this.pointer, 64), 'state')
+
+  leftover = wasm.exports.sha512_monolith(this.pointer, this.pointer, this.pointer + 64, 1)
+  // console.log(hexSlice(wasm.memory, this.pointer + 64, 64), 'state double')
+  const resultBuf = Buffer.from(wasm.memory.subarray(this.pointer, this.pointer + this.digestLength))
 
   if (!enc) {
     return resultBuf
