@@ -26,17 +26,17 @@ function Sha512 () {
 
   if (!freeList.length) {
     freeList.push(head)
-    head += 200
+    head += 208
   }
 
   this.finalized = false
   this.digestLength = SHA512_BYTES
   this.pointer = freeList.pop()
-  this.leftover = Buffer.alloc(0)
+  this.alignOffset = 0
 
-  wasm.memory.fill(0, this.pointer, this.pointer + 200)
+  wasm.memory.fill(0, this.pointer, this.pointer + 208)
 
-  if (this.pointer + this.digestLength > wasm.memory.length) wasm.realloc(this.pointer + 200)
+  if (this.pointer + this.digestLength > wasm.memory.length) wasm.realloc(this.pointer + 208)
 }
 
 Sha512.prototype.update = function (input, enc) {
@@ -51,17 +51,12 @@ Sha512.prototype.update = function (input, enc) {
 
   if (head + input.length > wasm.memory.length) wasm.realloc(head + input.length)
 
-  if (this.leftover != null) {
-    wasm.memory.set(this.leftover, head)
-    wasm.memory.set(inputBuf, this.leftover.byteLength + head)
-  } else {
-    wasm.memory.set(inputBuf, head)
-  }
+  wasm.memory.fill(0, head, head + this.alignOffset)
+  wasm.memory.set(inputBuf, head + this.alignOffset)
   
-  const overlap = this.leftover ? this.leftover.byteLength : 0
-  const leftover = wasm.exports.sha512_monolith(this.pointer, head, head + length + overlap, 0)
+  this.alignOffset = wasm.exports.sha512_monolith(this.pointer, head, head + length + this.alignOffset, 0)
+  console.log(hexSlice(wasm.memory, this.pointer + 64, 128))
 
-  this.leftover = wasm.memory.slice(head, head + leftover)
   return this
 }
 
@@ -71,8 +66,8 @@ Sha512.prototype.digest = function (enc, offset = 0) {
 
   freeList.push(this.pointer)
 
-  wasm.memory.set(this.leftover, head)
-  wasm.exports.sha512_monolith(this.pointer, head, head + this.leftover.byteLength, 1)
+  wasm.memory.fill(0, head, head + 16)
+  wasm.exports.sha512_monolith(this.pointer, head, head, 1)
 
   const resultBuf = int64reverse(wasm.memory, this.pointer, this.digestLength)
   
@@ -114,21 +109,26 @@ Sha512.prototype.ready = Sha512.ready
 function noop () {}
 
 function formatInput (input, enc) {
-  const inputBuf = Buffer.from(input, enc)
-  const result = new Uint8Array(inputBuf)
+  let result
+  if (Buffer.isBuffer(input)) {
+    result = input
+  } else {
+    const result = Buffer.from(input, enc)
+  }
 
   return [result, result.byteLength]
 }
 
 function int64reverse (buf, start, len) {
-  const result = new Uint8Array(len)
+  // TODO change to dataview
+  const result = Buffer.allocUnsafe(len)
 
   for (let i = 0; i < len; i++) {
     const index = Math.floor(i / 8) * 8 + 7 - i % 8
     result[index] = buf[start + i]
   }
 
-  return Buffer.from(result)
+  return result
 }
 
 function hexSlice (buf, start, len) {
