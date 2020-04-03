@@ -53,9 +53,8 @@ Sha512.prototype.update = function (input, enc) {
 
   wasm.memory.fill(0, head, head + this.alignOffset)
   wasm.memory.set(inputBuf, head + this.alignOffset)
-  
+
   this.alignOffset = wasm.exports.sha512_monolith(this.pointer, head, head + length + this.alignOffset, 0)
-  console.log(hexSlice(wasm.memory, this.pointer + 64, 128))
 
   return this
 }
@@ -104,17 +103,55 @@ Sha512.ready = function (cb) {
   return p
 }
 
+Sha512.prototype.onetime = function (input, enc) {
+  assert(this.finalized === false, 'Hash instance finalized')
+
+  if (head % 8 !== 0) head += 8 - head % 8
+  assert(head % 8 === 0, 'input should be aligned for int64')
+
+  let [ inputBuf, length ] = formatInput(input, enc)
+
+  assert(inputBuf instanceof Uint8Array, 'input must be Uint8Array or Buffer')
+
+  if (head + input.length > wasm.memory.length) wasm.realloc(head + input.length)
+
+  if (this.leftover != null) {
+    wasm.memory.set(this.leftover, head)
+    wasm.memory.set(inputBuf, this.leftover.byteLength + head)
+  } else {
+    wasm.memory.set(inputBuf, head)
+  }
+
+  const overlap = this.leftover ? this.leftover.byteLength : 0
+  const leftover = wasm.exports.sha512_monolith(this.pointer, head, head + length + overlap, 1)
+  const resultBuf = int64reverse(wasm.memory, this.pointer, this.digestLength)
+
+  this.leftover = inputBuf.slice(inputBuf.byteLength - leftover)
+
+  if (!enc) {
+    return resultBuf
+  }
+
+  if (typeof enc === 'string') {
+    return resultBuf.toString(enc)
+  }
+
+  assert(enc instanceof Uint8Array, 'input must be Uint8Array or Buffer')
+  assert(enc.byteLength >= this.digestLength + offset, 'input must be Uint8Array or Buffer')
+
+  for (let i = 0; i < this.digestLength; i++) {
+    enc[i + offset] = resultBuf[i]
+  }
+
+  return enc
+}
+
 Sha512.prototype.ready = Sha512.ready
 
 function noop () {}
 
 function formatInput (input, enc) {
-  let result
-  if (Buffer.isBuffer(input)) {
-    result = input
-  } else {
-    const result = Buffer.from(input, enc)
-  }
+  var result = Buffer.isBuffer(input) ? input : Buffer.from(input, enc)
 
   return [result, result.byteLength]
 }

@@ -791,6 +791,8 @@
                 (i32.add)
                 (tee_local $ptr)
 
+
+
                 ;; carry n > 64 bits for i128 length
                 (if (i64.lt_u (get_local $bytes_read) (get_local $overflow_flag))
                     (then
@@ -4323,13 +4325,16 @@
                 (i64.const 0)
                 (tee_local $w15)
                 (i64.store offset=184)
+
+                (i32.const 0)
+                (set_local $block_position)
                 
                 (br $start)))
-    
+
     ;; load last 8 bytes individually
     (block $end
-        ;; check for empty input
 
+        ;; check for empty input
         (br_if $end (i32.eq (get_local $ptr) (get_local $input_end)))
 
         (block $15
@@ -4350,7 +4355,7 @@
                                                                     (block $0
                                                                         (block $switch
                                                                             (br_table $0 $1 $2 $3 $4 $5 $6 $7 $8 $9 $10 $11 $12 $13 $14 $15
-                                                                                (i32.div_u (i32.wrap/i64 (get_local $bytes_read)) (i32.const 8)))))
+                                                                                (i32.rem_u (i32.div_u (i32.wrap/i64 (get_local $bytes_read)) (i32.const 8)) (i32.const 16)))))
                                                 
                                                                     
                                                                     (i64.shl (i64.load8_u (get_local $ptr)) (i64.const 56))
@@ -4422,7 +4427,7 @@
                                                                     (set_local $w0)
                                                                     (br $end))
 
-                                                                
+
                                                                 (i64.shl (i64.load8_u (get_local $ptr)) (i64.const 56))
                                                                 (get_local $w1)
                                                                 (i64.or)
@@ -4623,6 +4628,7 @@
                                                         (set_local $w3)
                                                         
                                                         (set_local $ptr (i32.add (get_local $ptr) (i32.const 1)))
+                                                        (set_local $bytes_read (i64.add (get_local $bytes_read) (i64.const 1)))
                                                         (br_if $end (i32.eq (get_local $ptr) (get_local $input_end)))
 
                                                         (i64.load8_u (get_local $ptr))
@@ -5460,7 +5466,7 @@
         (get_local $w15)
         (i64.or)
         (set_local $w15)
-        
+
         (set_local $ptr (i32.add (get_local $ptr) (i32.const 1)))
         (set_local $bytes_read (i64.add (get_local $bytes_read) (i64.const 1)))
         (br_if $end (i32.eq (get_local $ptr) (get_local $input_end)))
@@ -5578,8 +5584,12 @@
                                                                         (block $15
                                                                             (block $14
                                                                                 (block $switch
-                                                                                    (br_table $0 $1 $2 $3 $4 $5 $6 $7 $8 $9 $10 $11 $12 $13 $14 $15
-                                                                                        (i32.div_u (i32.wrap/i64 (get_local $bytes_read)) (i32.const 8)))))
+                                                                                    (i32.wrap/i64 (get_local $bytes_read))
+                                                                                    (i32.const 8)
+                                                                                    (i32.div_u)
+                                                                                    (i32.const 16)
+                                                                                    (i32.rem_u)
+                                                                                    (br_table $0 $1 $2 $3 $4 $5 $6 $7 $8 $9 $10 $11 $12 $13 $14 $15)))
                                                                                 
                                                                                 (get_local $last_word)
                                                                                 (get_local $w14)
@@ -9156,22 +9166,7 @@
             (set_local $w14)
 
             (set_local $w15 (i64.mul (get_local $bytes_read) (i64.const 8)))
-            (call $i64.log (get_local $w0))
-            (call $i64.log (get_local $w1))
-            (call $i64.log (get_local $w2))
-            (call $i64.log (get_local $w3))
-            (call $i64.log (get_local $w4))
-            (call $i64.log (get_local $w5))
-            (call $i64.log (get_local $w6))
-            (call $i64.log (get_local $w7))
-            (call $i64.log (get_local $w8))
-            (call $i64.log (get_local $w9))
-            (call $i64.log (get_local $w10))
-            (call $i64.log (get_local $w11))
-            (call $i64.log (get_local $w12))
-            (call $i64.log (get_local $w13))
-            (call $i64.log (get_local $w14))
-            (call $i64.log (get_local $w15))
+
 
             ;; WORD EXPANSION
             (set_local $w16 (i64.add (i64.add (i64.add (i64.xor (i64.xor (i64.rotr (get_local $w14) (i64.const 19)) (i64.rotr (get_local $w14) (i64.const 61))) (i64.shr_u (get_local $w14) (i64.const 6))) (get_local $w9)) (i64.xor (i64.xor (i64.rotr (get_local $w1) (i64.const 1)) (i64.rotr (get_local $w1) (i64.const 8))) (i64.shr_u (get_local $w1) (i64.const 7))) (get_local $w0))))

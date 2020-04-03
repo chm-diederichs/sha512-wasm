@@ -4,7 +4,8 @@
   "description": "sha512 hashing algorithm implemented in WebAssembly",
   "main": "index.js",
   "scripts": {
-    "test": "node test"
+    "test": "node test",
+    "bench": "node test/benchmark.js"
   },
   "keywords": [
     "sha512",

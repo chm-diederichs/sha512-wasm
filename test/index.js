@@ -11,38 +11,20 @@ tape('empty input', function (t) {
   t.end()
 })
 
-// timing benchmark
-{
-  const buf = Buffer.alloc(8192)
-  crypto.randomFillSync(buf)
+tape('check each byte length < 128', function (t) {
+  for (let j = 0; j < 128; j++) {
+    var buf = Buffer.alloc(j)
+    for (let i = 0; i < buf.byteLength; i++) {
+      buf[i] = i
+    }
 
-  const hash = sha512()
-  const jsHash = sha512js.create()
-  const refHash = crypto.createHash('sha512') 
-
-  console.time('wasm')
-  for (let i = 0; i < 1000; i++) {
-    hash.update(buf)
+    const hash = new sha512().update(buf).digest()
+    const ref = crypto.createHash('sha512').update(buf).digest()
+    t.same(hash, ref)
   }
-  const res = hash.digest('hex')
-  console.timeEnd('wasm')
 
-  console.time('js')
-  for (let i = 0; i < 1000; i++) {
-    jsHash.update(buf)
-  }
-  const jsRes = jsHash.hex()
-  console.timeEnd('js')
-
-  console.time('native')
-  for (let i = 0; i < 1000; i++) {
-    refHash.update(buf)
-  }
-  const refRes = refHash.digest('hex')
-  console.timeEnd('native')
-
-  console.log('\nhashes are consistent: ', res === refRes && res === jsRes)
-}
+  t.end()
+})
 
 tape('naive input fuzz', function (t) {
   for (let i = 0; i < 10; i++) {
@@ -50,14 +32,13 @@ tape('naive input fuzz', function (t) {
 
     const hash = sha512().update(buf).digest('hex')
     const ref = crypto.createHash('sha512').update(buf).digest('hex')
-
     t.ok(hash === ref)
   }
   t.end()
 })
 
 tape('test power of 2 length buffers', function (t) {
-  for (let i = 0; i < 31; i++) {  
+  for (let i = 0; i < 27; i++) {
     const hash = sha512()
     const refHash = crypto.createHash('sha512')
     
@@ -66,7 +47,7 @@ tape('test power of 2 length buffers', function (t) {
     const test = hash.update(buf).digest('hex')
     const ref = refHash.update(buf).digest('hex')
 
-    t.ok(test === ref, `2^${i}`)
+    t.same(test, ref, `2^${i}`)
   }
   t.end()
 })
@@ -75,7 +56,7 @@ tape('fuzz multiple updates', function (t) {
   const hash = sha512()
   const refHash = crypto.createHash('sha512')
 
-  for (let i = 0; i < 100; i++) {  
+  for (let i = 0; i < 1; i++) {
     const buf = crypto.randomBytes(2**16 * Math.random())
 
     hash.update(buf)
@@ -92,6 +73,7 @@ tape('crypto-browserify test vectors', function (t) {
     const buf = Buffer.from(vector.input, 'base64')
     const hash = sha512().update(buf).digest('hex')
     t.equal(hash, vector.hash, `input ${i}`)
+    if (i === 31) console.log(vector)
     i++
   }
   t.end()
@@ -123,6 +105,28 @@ tape('several instances updated simultaneously', function (t) {
 
   t.equal(res, res1, 'consistent with reference')
   t.equal(res1, res2, 'consistent with eachother')
+  t.end()
+})
+
+tape('onetime', function (t) {
+  var buf = Buffer.from('hello, world!')
+
+  const hash = sha512().onetime(buf)
+  const ref = crypto.createHash('sha512').update(buf).digest()
+
+  t.same(hash, ref)
+
+  for (let j = 0; j < 128; j++) {
+    buf = Buffer.alloc(j)
+    for (let i = 0; i < buf.byteLength; i++) {
+      buf[i] = i
+    }
+
+    const hash = new sha512().onetime(buf)
+    const ref = crypto.createHash('sha512').update(buf).digest()
+    if (Buffer.compare(hash, ref)) t.fail()
+  }
+
   t.end()
 })
 
