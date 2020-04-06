@@ -73,7 +73,6 @@ tape('crypto-browserify test vectors', function (t) {
     const buf = Buffer.from(vector.input, 'base64')
     const hash = sha512().update(buf).digest('hex')
     t.equal(hash, vector.hash, `input ${i}`)
-    if (i === 31) console.log(vector)
     i++
   }
   t.end()
