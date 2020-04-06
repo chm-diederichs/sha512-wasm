@@ -29,7 +29,7 @@
       (call $i64.log (get_local $0))
       (return (get_local $0)))
 
-  (func $sha512_monolith (export "sha512_monolith") (param $ctx i32) (param $input i32) (param $input_end i32) (param $final i32) (param $big_endian i32)
+  (func $sha512_monolith (export "sha512_monolith") (param $ctx i32) (param $input i32) (param $input_end i32) (param $final i32)
     (result i32)
 
     ;;    schema  208 bytes
@@ -41,7 +41,7 @@
     (local $ptr i32)
     (local $bytes_read i64)
     (local $bytes_read_overflow i64)
-    (local $overflow_flag i64)
+    (local $check_overflow i64)
     (local $block_position i32)
     (local $last_word i64)
     (local $leftover i32)
@@ -194,12 +194,8 @@
 
     (set_local $bytes_read_overflow (i64.load offset=200 (get_local $ctx)))
     (set_local $block_position (i32.wrap/i64 (i64.rem_u (get_local $bytes_read) (i64.const 128))))
-    (set_local $overflow_flag (get_local $bytes_read))
+    (set_local $check_overflow (get_local $bytes_read))
     (set_local $leftover (i32.rem_u (i32.sub (get_local $input_end) (get_local $input)) (i32.const 8)))
-    
-    (if (i32.ne (get_local $final) (i32.const 1))
-        (then 
-            (set_local $bytes_read (i64.mul (i64.div_u (get_local $bytes_read) (i64.const 8)) (i64.const 8)))))
 
     (set_local $ptr (get_local $input))
     (block $break
@@ -780,9 +776,9 @@
 
 
                 ;; carry n > 64 bits for i128 length
-                (if (i64.lt_u (get_local $bytes_read) (get_local $overflow_flag))
+                (if (i64.lt_u (get_local $bytes_read) (get_local $check_overflow))
                     (then
-                        (set_local $overflow_flag (get_local $bytes_read))
+                        (set_local $check_overflow (get_local $bytes_read))
                         (set_local $bytes_read_overflow (i64.add (get_local $bytes_read_overflow) (i64.const 1)))))
 
                 ;; compress
@@ -852,8 +848,7 @@
                 (set_local $w79 (i64.add (i64.add (i64.add (i64.xor (i64.xor (i64.rotr (get_local $w77) (i64.const 19)) (i64.rotr (get_local $w77) (i64.const 61))) (i64.shr_u (get_local $w77) (i64.const 6))) (get_local $w72)) (i64.xor (i64.xor (i64.rotr (get_local $w64) (i64.const 1)) (i64.rotr (get_local $w64) (i64.const 8))) (i64.shr_u (get_local $w64) (i64.const 7))) (get_local $w63))))
 
                 ;;  store inital state
-                ;; TODO: if (bytes_read == 0) .. here
-                (if (i64.lt_u (i64.load offset=192 (get_local $ctx)) (i64.const 128))
+                (if (i64.le_u (get_local $bytes_read) (i64.const 128))
                     (then
                         (i64.store offset=0  (get_local $ctx) (i64.xor (i64.const 0x6a09e667f3bcc908) (i64.const 0)))
                         (i64.store offset=8  (get_local $ctx) (i64.xor (i64.const 0xbb67ae8584caa73b) (i64.const 0)))
@@ -5545,10 +5540,9 @@
     (i64.store offset=192)
 
     ;; carry n > 64 bits for i128 length 
-    (if (i64.lt_u (get_local $bytes_read) (get_local $overflow_flag))
+    (if (i64.lt_u (get_local $bytes_read) (get_local $check_overflow))
         (then
-                    (set_local $overflow_flag (get_local $bytes_read))
-            (set_local $overflow_flag (get_local $bytes_read))
+            (set_local $check_overflow (get_local $bytes_read))
             (set_local $bytes_read_overflow (i64.add (get_local $bytes_read_overflow) (i64.const 1)))))
 
     (get_local $ctx)
@@ -5560,11 +5554,18 @@
             (i64.shl (i64.const 0x80) (i64.mul (i64.sub (i64.const 7) (i64.rem_u (get_local $bytes_read) (i64.const 8))) (i64.const 8)))
             (set_local $last_word)
 
-            (get_local $bytes_read)
-            (i64.const 128)
-            (i64.rem_u)
-            (i32.wrap/i64)
-            (set_local $block_position)
+            ;;  store inital state
+            (if (i64.lt_u (get_local $bytes_read) (i64.const 128))
+                (then
+                    (i64.store offset=0  (get_local $ctx) (i64.xor (i64.const 0x6a09e667f3bcc908) (i64.const 0)))
+                    (i64.store offset=8  (get_local $ctx) (i64.xor (i64.const 0xbb67ae8584caa73b) (i64.const 0)))
+                    (i64.store offset=16 (get_local $ctx) (i64.xor (i64.const 0x3c6ef372fe94f82b) (i64.const 0)))   
+                    (i64.store offset=24 (get_local $ctx) (i64.xor (i64.const 0xa54ff53a5f1d36f1) (i64.const 0)))
+                    (i64.store offset=32 (get_local $ctx) (i64.xor (i64.const 0x510e527fade682d1) (i64.const 0)))
+                    (i64.store offset=40 (get_local $ctx) (i64.xor (i64.const 0x9b05688c2b3e6c1f) (i64.const 0)))
+                    (i64.store offset=48 (get_local $ctx) (i64.xor (i64.const 0x1f83d9abfb41bd6b) (i64.const 0)))
+                    (i64.store offset=56 (get_local $ctx) (i64.xor (i64.const 0x5be0cd19137e2179) (i64.const 0)))))
+
 
             (block $pad_end
                 (block $13
@@ -5669,18 +5670,6 @@
                                                                             (set_local $w78 (i64.add (i64.add (i64.add (i64.xor (i64.xor (i64.rotr (get_local $w76) (i64.const 19)) (i64.rotr (get_local $w76) (i64.const 61))) (i64.shr_u (get_local $w76) (i64.const 6))) (get_local $w71)) (i64.xor (i64.xor (i64.rotr (get_local $w63) (i64.const 1)) (i64.rotr (get_local $w63) (i64.const 8))) (i64.shr_u (get_local $w63) (i64.const 7))) (get_local $w62))))
                                                                             (set_local $w79 (i64.add (i64.add (i64.add (i64.xor (i64.xor (i64.rotr (get_local $w77) (i64.const 19)) (i64.rotr (get_local $w77) (i64.const 61))) (i64.shr_u (get_local $w77) (i64.const 6))) (get_local $w72)) (i64.xor (i64.xor (i64.rotr (get_local $w64) (i64.const 1)) (i64.rotr (get_local $w64) (i64.const 8))) (i64.shr_u (get_local $w64) (i64.const 7))) (get_local $w63))))                                                                            
 
-                                                                            ;;  store inital state
-                                                                            ;; TODO: if (bytes_read == 0) .. here
-                                                                            (if (i64.lt_u (i64.load offset=192 (get_local $ctx)) (i64.const 128))
-                                                                                (then
-                                                                                    (i64.store offset=0  (get_local $ctx) (i64.xor (i64.const 0x6a09e667f3bcc908) (i64.const 0)))
-                                                                                    (i64.store offset=8  (get_local $ctx) (i64.xor (i64.const 0xbb67ae8584caa73b) (i64.const 0)))
-                                                                                    (i64.store offset=16 (get_local $ctx) (i64.xor (i64.const 0x3c6ef372fe94f82b) (i64.const 0)))   
-                                                                                    (i64.store offset=24 (get_local $ctx) (i64.xor (i64.const 0xa54ff53a5f1d36f1) (i64.const 0)))
-                                                                                    (i64.store offset=32 (get_local $ctx) (i64.xor (i64.const 0x510e527fade682d1) (i64.const 0)))
-                                                                                    (i64.store offset=40 (get_local $ctx) (i64.xor (i64.const 0x9b05688c2b3e6c1f) (i64.const 0)))
-                                                                                    (i64.store offset=48 (get_local $ctx) (i64.xor (i64.const 0x1f83d9abfb41bd6b) (i64.const 0)))
-                                                                                    (i64.store offset=56 (get_local $ctx) (i64.xor (i64.const 0x5be0cd19137e2179) (i64.const 0)))))
 
                                                                             ;; load previous hash state into registers
                                                                             (set_local $a (i64.load offset=0 (get_local $ctx)))
@@ -9055,7 +9044,7 @@
                                                                             ;; store hash values
                                                                             (i64.store offset=0  (get_local $ctx) (i64.add (i64.load offset=0  (get_local $ctx)) (get_local $a)))
                                                                             (i64.store offset=8  (get_local $ctx) (i64.add (i64.load offset=8  (get_local $ctx)) (get_local $b)))
-                                                                            (i64.store offset=16 (get_local $ctx) (i64.add (i64.load offset=16 (get_local $ctx)) (get_local $c)))    
+                                                                            (i64.store offset=16 (get_local $ctx) (i64.add (i64.load offset=16 (get_local $ctx)) (get_local $c)))
                                                                             (i64.store offset=24 (get_local $ctx) (i64.add (i64.load offset=24 (get_local $ctx)) (get_local $d)))
                                                                             (i64.store offset=32 (get_local $ctx) (i64.add (i64.load offset=32 (get_local $ctx)) (get_local $e)))
                                                                             (i64.store offset=40 (get_local $ctx) (i64.add (i64.load offset=40 (get_local $ctx)) (get_local $f)))
@@ -9179,22 +9168,6 @@
             (set_local $w14)
 
             (set_local $w15 (i64.mul (get_local $bytes_read) (i64.const 8)))
-            (call $i64.log (get_local $w0))
-            (call $i64.log (get_local $w1))
-            (call $i64.log (get_local $w2))
-            (call $i64.log (get_local $w3))
-            (call $i64.log (get_local $w4))
-            (call $i64.log (get_local $w5))
-            (call $i64.log (get_local $w6))
- (call $i64.log (get_local $w7))
- (call $i64.log (get_local $w8))
- (call $i64.log (get_local $w9))
- (call $i64.log (get_local $w10))
- (call $i64.log (get_local $w11))
- (call $i64.log (get_local $w12))
- (call $i64.log (get_local $w13))
- (call $i64.log (get_local $w14))
- (call $i64.log (get_local $w15))
 
             ;; WORD EXPANSION
             (set_local $w16 (i64.add (i64.add (i64.add (i64.xor (i64.xor (i64.rotr (get_local $w14) (i64.const 19)) (i64.rotr (get_local $w14) (i64.const 61))) (i64.shr_u (get_local $w14) (i64.const 6))) (get_local $w9)) (i64.xor (i64.xor (i64.rotr (get_local $w1) (i64.const 1)) (i64.rotr (get_local $w1) (i64.const 8))) (i64.shr_u (get_local $w1) (i64.const 7))) (get_local $w0))))
@@ -9262,17 +9235,6 @@
             (set_local $w78 (i64.add (i64.add (i64.add (i64.xor (i64.xor (i64.rotr (get_local $w76) (i64.const 19)) (i64.rotr (get_local $w76) (i64.const 61))) (i64.shr_u (get_local $w76) (i64.const 6))) (get_local $w71)) (i64.xor (i64.xor (i64.rotr (get_local $w63) (i64.const 1)) (i64.rotr (get_local $w63) (i64.const 8))) (i64.shr_u (get_local $w63) (i64.const 7))) (get_local $w62))))
             (set_local $w79 (i64.add (i64.add (i64.add (i64.xor (i64.xor (i64.rotr (get_local $w77) (i64.const 19)) (i64.rotr (get_local $w77) (i64.const 61))) (i64.shr_u (get_local $w77) (i64.const 6))) (get_local $w72)) (i64.xor (i64.xor (i64.rotr (get_local $w64) (i64.const 1)) (i64.rotr (get_local $w64) (i64.const 8))) (i64.shr_u (get_local $w64) (i64.const 7))) (get_local $w63))))
 
-            ;;  store inital state if needed
-            (if (i64.lt_u (i64.load offset=192 (get_local $ctx)) (i64.const 128))
-                (then
-                    (i64.store offset=0  (get_local $ctx) (i64.xor (i64.const 0x6a09e667f3bcc908) (i64.const 0)))
-                    (i64.store offset=8  (get_local $ctx) (i64.xor (i64.const 0xbb67ae8584caa73b) (i64.const 0)))
-                    (i64.store offset=16 (get_local $ctx) (i64.xor (i64.const 0x3c6ef372fe94f82b) (i64.const 0)))   
-                    (i64.store offset=24 (get_local $ctx) (i64.xor (i64.const 0xa54ff53a5f1d36f1) (i64.const 0)))
-                    (i64.store offset=32 (get_local $ctx) (i64.xor (i64.const 0x510e527fade682d1) (i64.const 0)))
-                    (i64.store offset=40 (get_local $ctx) (i64.xor (i64.const 0x9b05688c2b3e6c1f) (i64.const 0)))
-                    (i64.store offset=48 (get_local $ctx) (i64.xor (i64.const 0x1f83d9abfb41bd6b) (i64.const 0)))
-                    (i64.store offset=56 (get_local $ctx) (i64.xor (i64.const 0x5be0cd19137e2179) (i64.const 0)))))
 
             ;; load previous hash state into registers
             (set_local $a (i64.load offset=0 (get_local $ctx)))
