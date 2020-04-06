@@ -108,28 +108,6 @@ tape('several instances updated simultaneously', function (t) {
   t.end()
 })
 
-tape('onetime', function (t) {
-  var buf = Buffer.from('hello, world!')
-
-  const hash = sha512().onetime(buf)
-  const ref = crypto.createHash('sha512').update(buf).digest()
-
-  t.same(hash, ref)
-
-  for (let j = 0; j < 128; j++) {
-    buf = Buffer.alloc(j)
-    for (let i = 0; i < buf.byteLength; i++) {
-      buf[i] = i
-    }
-
-    const hash = new sha512().onetime(buf)
-    const ref = crypto.createHash('sha512').update(buf).digest()
-    if (Buffer.compare(hash, ref)) t.fail()
-  }
-
-  t.end()
-})
-
 tape('reported bugs', function (t) {
   const testBuf = Buffer.from('hello')
 
