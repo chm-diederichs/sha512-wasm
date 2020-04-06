@@ -106,6 +106,7 @@ Sha512.ready = function (cb) {
 
 Sha512.prototype.onetime = function (input, enc) {
   assert(this.finalized === false, 'Hash instance finalized')
+  this.finalized = true
 
   if (head % 8 !== 0) head += 8 - head % 8
   assert(head % 8 === 0, 'input should be aligned for int64')
@@ -150,6 +151,7 @@ Sha512.prototype.onetime = function (input, enc) {
 
 Sha512.prototype.double = function (input, enc) {
   assert(this.finalized === false, 'Hash instance finalized')
+  this.finalized = true
 
   if (head % 8 !== 0) head += 8 - head % 8
   assert(head % 8 === 0, 'input should be aligned for int64')
