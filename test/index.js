@@ -20,7 +20,7 @@ tape('check each byte length < 128', function (t) {
 
     const hash = new sha512().update(buf).digest()
     const ref = crypto.createHash('sha512').update(buf).digest()
-    t.same(hash, ref)
+    same(t, hash, ref)
   }
 
   t.end()
@@ -41,7 +41,7 @@ tape('test power of 2 length buffers', function (t) {
   for (let i = 0; i < 27; i++) {
     const hash = sha512()
     const refHash = crypto.createHash('sha512')
-    
+
     const buf = Buffer.alloc(2 ** i)
 
     const test = hash.update(buf).digest('hex')
@@ -57,13 +57,13 @@ tape('fuzz multiple updates', function (t) {
   const refHash = crypto.createHash('sha512')
 
   for (let i = 0; i < 1; i++) {
-    const buf = crypto.randomBytes(2**16 * Math.random())
+    const buf = crypto.randomBytes(2 ** 16 * Math.random())
 
     hash.update(buf)
     refHash.update(buf)
   }
 
-  t.same(hash.digest(), refHash.digest(), 'multiple updates consistent')
+  same(t, hash.digest(), refHash.digest(), 'multiple updates consistent')
   t.end()
 })
 
@@ -79,7 +79,7 @@ tape('crypto-browserify test vectors', function (t) {
 })
 
 tape('several instances updated simultaneously', function (t) {
-  const hash1 = sha512() 
+  const hash1 = sha512()
   const hash2 = sha512()
   const refHash = crypto.createHash('sha512')
 
@@ -113,8 +113,29 @@ tape('reported bugs', function (t) {
   const res = crypto.createHash('sha512').update(testBuf).digest('hex')
   const res1 = sha512().update(testBuf).digest('hex')
   const res2 = sha512().update(testBuf).digest('hex')
-    
+
   t.equal(res, res1)
   t.equal(res1, res2)
   t.end()
 })
+
+tape('base64 test', function (t) {
+  const testBuf = crypto.randomBytes(1024)
+  const testB64 = testBuf.toString('base64')
+
+  const b64res = crypto.createHash('sha512').update(testBuf).digest()
+  const b64test = sha512().update(testB64, 'base64').digest()
+  same(t, b64res, b64test, 'base64 input encoding works')
+
+  const res = crypto.createHash('sha512').update(testBuf).digest('base64')
+  const test = sha512().update(testBuf).digest('base64')
+  t.same(res, test, 'base64 output encoding works')
+
+  t.end()
+})
+
+function same (t, a, b, msg) {
+  if (!msg) msg = 'contents are equal'
+  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return t.fail()
+  t.pass(msg)
+}

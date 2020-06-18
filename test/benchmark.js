@@ -4,12 +4,12 @@ const sha512js = require('js-sha512').sha512
 
 // timing benchmark
 {
-  console.log('single instance, 16kB buffer.\n')
+  console.log('single instance: 10000 x 16kB buffer.\n')
   const buf = crypto.randomBytes(16384)
 
   const hash = sha512()
   const jsHash = sha512js.create()
-  const refHash = crypto.createHash('sha512') 
+  const refHash = crypto.createHash('sha512')
 
   console.time('wasm')
   for (let i = 0; i < 10000; i++) {
