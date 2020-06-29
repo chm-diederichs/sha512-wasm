@@ -16,6 +16,13 @@
       ;; Lower limb
       (i32.wrap/i64 (get_local $0))))
 
+  (func $i64.log_tee
+    (param $0 i64)
+    (result i64)
+    (call $i64.log (get_local $0))
+    (return (get_local $0)))
+
+
   (memory (export "memory") 0)
 
   ;; registers
@@ -464,23 +471,22 @@
     (set_local $w14 (i64.const 0))
     (set_local $w15 (i64.const 0)))
 
-  (func $sha512 (export "sha512") (param $ctx i32) (param $input i32) (param $input_end i32) (param $final i32)
-    (result i32)
+  (func $sha512 (export "sha512") (param $ctx i32) (param $roi i32) (param $length i32) (param $final i32)
+    ;; (result i32)
 
     ;;    schema  208 bytes
     ;;     0..64  hash state
-    ;;  64 - 192  store words between updates
-    ;; 192 - 208  number of bytes read across all updates (128bit)
+    ;;    64..80  number of bytes read across all updates (128bit)
+    ;;   80..208  store words between updates
 
     (local $i i32)
     (local $ptr i32)
     (local $bytes_read i64)
     (local $bytes_read_overflow i64)
     (local $check_overflow i64)
-    (local $block_position i32)
     (local $last_word i64)
-    (local $leftover i32)
-    (local $remaining i64)
+    (local $remaining i32)
+    (local $tail i64)
 
     ;; expanded message schedule
     (local $w0 i64)  (local $w1 i64)  (local $w2 i64)  (local $w3 i64)  
@@ -490,573 +496,153 @@
     (local $w16 i64) (local $w17 i64) (local $w18 i64) (local $w19 i64)
 
     ;; load current block position
-    (set_local $bytes_read (i64.load offset=192 (get_local $ctx)))
-    (set_local $bytes_read_overflow (i64.load offset=200 (get_local $ctx)))
-    (set_local $block_position (i32.wrap/i64 (i64.rem_u (get_local $bytes_read) (i64.const 128))))
+    (set_local $bytes_read (i64.load offset=64 (get_local $ctx)))
+    (set_local $bytes_read_overflow (i64.load offset=72 (get_local $ctx)))
+    (set_local $ptr (i32.add (get_local $ctx) (i32.const 80)))
+    (set_local $remaining (get_local $length))
+
+    (block $finish
+      (set_local $w0  (i64.load offset=0   (get_local $ptr)))
+      (set_local $w1  (i64.load offset=8   (get_local $ptr)))
+      (set_local $w2  (i64.load offset=16  (get_local $ptr)))
+      (set_local $w3  (i64.load offset=24  (get_local $ptr)))
+      (set_local $w4  (i64.load offset=32  (get_local $ptr)))
+      (set_local $w5  (i64.load offset=40  (get_local $ptr)))
+      (set_local $w6  (i64.load offset=48  (get_local $ptr)))
+      (set_local $w7  (i64.load offset=56  (get_local $ptr)))
+      (set_local $w8  (i64.load offset=64  (get_local $ptr)))
+      (set_local $w9  (i64.load offset=72  (get_local $ptr)))
+      (set_local $w10 (i64.load offset=80  (get_local $ptr)))
+      (set_local $w11 (i64.load offset=88  (get_local $ptr)))
+      (set_local $w12 (i64.load offset=96  (get_local $ptr)))
+      (set_local $w13 (i64.load offset=104 (get_local $ptr)))
+      (set_local $w14 (i64.load offset=112 (get_local $ptr)))
+      (set_local $w15 (i64.load offset=120 (get_local $ptr)))
+
+      (tee_local $remaining (i32.sub (get_local $remaining) (i32.const 64)))
+      (i32.const 0)
+      (i32.le_s)
+      (br_if $finish)
+
+      (get_local $ctx)
+      (get_local $w0 )
+      (get_local $w1 )
+      (get_local $w2 )
+      (get_local $w3 )
+      (get_local $w4 )
+      (get_local $w5 )
+      (get_local $w6 )
+      (get_local $w7 )
+      (get_local $w8 )
+      (get_local $w9 )
+      (get_local $w10)
+      (get_local $w11)
+      (get_local $w12)
+      (get_local $w13)
+      (get_local $w14)
+      (get_local $w15)
+      (call $compress)
+
+      (loop $rest_of_input
+        (set_local $w0  (i64.load offset=0   (get_local $roi)))
+        (set_local $w1  (i64.load offset=8   (get_local $roi)))
+        (set_local $w2  (i64.load offset=16  (get_local $roi)))
+        (set_local $w3  (i64.load offset=24  (get_local $roi)))
+        (set_local $w4  (i64.load offset=32  (get_local $roi)))
+        (set_local $w5  (i64.load offset=40  (get_local $roi)))
+        (set_local $w6  (i64.load offset=48  (get_local $roi)))
+        (set_local $w7  (i64.load offset=56  (get_local $roi)))
+        (set_local $w8  (i64.load offset=64  (get_local $roi)))
+        (set_local $w9  (i64.load offset=72  (get_local $roi)))
+        (set_local $w10 (i64.load offset=80  (get_local $roi)))
+        (set_local $w11 (i64.load offset=88  (get_local $roi)))
+        (set_local $w12 (i64.load offset=96  (get_local $roi)))
+        (set_local $w13 (i64.load offset=104 (get_local $roi)))
+        (set_local $w14 (i64.load offset=112 (get_local $roi)))
+        (set_local $w15 (i64.load offset=120 (get_local $roi)))
+
+        (tee_local $remaining (i32.sub (get_local $remaining) (i32.const 64)))
+        (i32.const 0)
+        (i32.le_s)
+        (if 
+          (then
+            (i64.store offset=80  (get_local $ctx) (get_local $w0))
+            (i64.store offset=88  (get_local $ctx) (get_local $w1))
+            (i64.store offset=96  (get_local $ctx) (get_local $w2))
+            (i64.store offset=104 (get_local $ctx) (get_local $w3))
+            (i64.store offset=112 (get_local $ctx) (get_local $w4))
+            (i64.store offset=120 (get_local $ctx) (get_local $w5))
+            (i64.store offset=128 (get_local $ctx) (get_local $w6))
+            (i64.store offset=136 (get_local $ctx) (get_local $w7))
+            (i64.store offset=144 (get_local $ctx) (get_local $w8))
+            (i64.store offset=152 (get_local $ctx) (get_local $w9))
+            (i64.store offset=160 (get_local $ctx) (get_local $w10))
+            (i64.store offset=168 (get_local $ctx) (get_local $w11))
+            (i64.store offset=176 (get_local $ctx) (get_local $w12))
+            (i64.store offset=184 (get_local $ctx) (get_local $w13))
+            (i64.store offset=192 (get_local $ctx) (get_local $w14))
+            (i64.store offset=200 (get_local $ctx) (get_local $w15))
+            (br $finish)))
+
+        (get_local $ctx)
+        (get_local $w0 )
+        (get_local $w1 )
+        (get_local $w2 )
+        (get_local $w3 )
+        (get_local $w4 )
+        (get_local $w5 )
+        (get_local $w6 )
+        (get_local $w7 )
+        (get_local $w8 )
+        (get_local $w9 )
+        (get_local $w10)
+        (get_local $w11)
+        (get_local $w12)
+        (get_local $w13)
+        (get_local $w14)
+        (get_local $w15)
+        (call $compress)
+        (br $rest_of_input)))
+
     (set_local $check_overflow (get_local $bytes_read))
-    (set_local $leftover (i32.rem_u (i32.sub (get_local $input_end) (get_local $input)) (i32.const 8)))
+    (set_local $bytes_read (i64.add (get_local $bytes_read) (i64.extend_u/i32 (get_local $length))))
 
-    (set_local $ptr (get_local $input))
-    (block $break
-        (block $0
-            (block $1
-                (block $2
-                    (block $3
-                        (block $4
-                            (block $5
-                                (block $6
-                                    (block $7
-                                        (block $8
-                                            (block $9
-                                                (block $10
-                                                    (block $11
-                                                        (block $12
-                                                            (block $13
-                                                                (block $14
-                                                                    (block $15
-                                                                        (block $switch
-                                                                            (br_table $0 $1 $2 $3 $4 $5 $6 $7 $8 $9 $10 $11 $12 $13 $14 $15
-                                                                                (i32.div_u (get_local $block_position) (i32.const 8)))))
-
-                                                                        (set_local $w15 (i64.load offset=184 (get_local $ctx))))
-                                                                    (set_local $w14 (i64.load offset=176 (get_local $ctx))))
-                                                                (set_local $w13 (i64.load offset=168 (get_local $ctx))))
-                                                            (set_local $w12 (i64.load offset=160 (get_local $ctx))))
-                                                        (set_local $w11 (i64.load offset=152 (get_local $ctx))))
-                                                    (set_local $w10 (i64.load offset=144 (get_local $ctx))))
-                                                (set_local $w9 (i64.load offset=136 (get_local $ctx))))
-                                            (set_local $w8 (i64.load offset=128 (get_local $ctx))))
-                                        (set_local $w7 (i64.load offset=120 (get_local $ctx))))
-                                    (set_local $w6 (i64.load offset=112 (get_local $ctx))))
-                                (set_local $w5 (i64.load offset=104 (get_local $ctx))))
-                            (set_local $w4 (i64.load offset=96 (get_local $ctx))))
-                        (set_local $w3 (i64.load offset=88 (get_local $ctx))))
-                    (set_local $w2 (i64.load offset=80 (get_local $ctx))))
-                (set_local $w1 (i64.load offset=72 (get_local $ctx))))
-            (set_local $w0 (i64.load offset=64 (get_local $ctx))))
-
-        (set_local $tmp (i64.and (i64.sub (get_local $input_end) (get_local $ptr)) (i64.const -8)))
-        (set_local $bytes_read (i64.add (get_local $bytes_read) (get_local $tmp))
-
-        ;; carry n > 64 bits for i128 length
-        (if (i64.lt_u (get_local $bytes_read) (get_local $check_overflow))
-            (then
-                (set_local $check_overflow (get_local $bytes_read))
-                (set_local $bytes_read_overflow (i64.add (get_local $bytes_read_overflow) (i64.const 1)))))
-
-
-        (block $less_than_8_bytes
-            (loop $start
-                (get_local $input_end)
-                (get_local $ptr)
-                (i32.sub)
-
-                (i32.const 8)
-                (i32.lt_u)
-                (br_if $less_than_8_bytes)
-
-                (block $15
-                    (block $14
-                        (block $13
-                            (block $12
-                                (block $11
-                                    (block $10
-                                        (block $9
-                                            (block $8
-                                                (block $7
-                                                    (block $6
-                                                        (block $5
-                                                            (block $4
-                                                                (block $3
-                                                                    (block $2
-                                                                        (block $1
-                                                                            (block $0
-                                                                                (block $switch
-                                                                                    (br_table $0 $1 $2 $3 $4 $5 $6 $7 $8 $9 $10 $11 $12 $13 $14 $15
-                                                                                        (i32.div_u (get_local $block_position) (i32.const 8)))))
-
-                                                                            (get_local $ctx)
-                                                                            (call $load_reverse_endian (get_local $ptr) (get_local $w0))
-                                                                            (tee_local $w0)
-                                                                            (i64.store offset=64)
-
-                                                                            (set_local $bytes_read (i64.add (get_local $bytes_read) (i64.const 8)))
-                                                                            (get_local $input_end)
-                                                                            (get_local $ptr)
-                                                                            (i32.const 8)
-                                                                            (i32.add)
-                                                                            (tee_local $ptr)
-                                                                            (i32.sub)
-                                                                            (i32.const 8)
-                                                                            (i32.lt_u)
-                                                                            (get_local $tmp)
-                                                                            (i64.const 8)
-                                                                            (br_if $less_than_8_bytes))
-
-                                                                        (get_local $ctx)
-                                                                        (call $load_reverse_endian (get_local $ptr) (get_local $w1))    
-                                                                        (tee_local $w1)
-                                                                        (i64.store offset=72)
-
-                                                                        (set_local $bytes_read (i64.add (get_local $bytes_read) (i64.const 8)))
-                                                                        (get_local $input_end)
-                                                                        (get_local $ptr)
-                                                                        (i32.const 8)
-                                                                        (i32.add)
-                                                                        (tee_local $ptr)
-                                                                        (i32.sub)
-                                                                        (i32.const 8)
-                                                                        (i32.lt_u)
-                                                                        (br_if $less_than_8_bytes))
-            
-                                                                    (get_local $ctx)
-                                                                    (call $load_reverse_endian (get_local $ptr) (get_local $w2))
-                                                                    (tee_local $w2)
-                                                                    (i64.store offset=80)
-
-                                                                    (set_local $bytes_read (i64.add (get_local $bytes_read) (i64.const 8)))
-                                                                    (get_local $input_end)
-                                                                    (get_local $ptr)
-                                                                    (i32.const 8)
-                                                                    (i32.add)
-                                                                    (tee_local $ptr)
-                                                                    (i32.sub)
-                                                                    (i32.const 8)
-                                                                    (i32.lt_u)                                                            
-                                                                    (br_if $less_than_8_bytes))
-
-                                                                (get_local $ctx)
-                                                                (call $load_reverse_endian (get_local $ptr) (get_local $w3))
-                                                                (tee_local $w3)
-                                                                (i64.store offset=88)
-
-                                                                (set_local $bytes_read (i64.add (get_local $bytes_read) (i64.const 8)))
-                                                                (get_local $input_end)
-                                                                (get_local $ptr)
-                                                                (i32.const 8)
-                                                                (i32.add)
-                                                                (tee_local $ptr)
-                                                                (i32.sub)
-                                                                (i32.const 8)
-                                                                (i32.lt_u)                                                                
-                                                                (br_if $less_than_8_bytes))
-            
-                                                            (get_local $ctx)
-                                                            (call $load_reverse_endian (get_local $ptr) (get_local $w4))
-                                                            (tee_local $w4)
-                                                            (i64.store offset=96)
-
-                                                            (set_local $bytes_read (i64.add (get_local $bytes_read) (i64.const 8)))
-                                                            (get_local $input_end)
-                                                            (get_local $ptr)
-                                                            (i32.const 8)
-                                                            (i32.add)
-                                                            (tee_local $ptr)
-                                                            (i32.sub)
-                                                            (i32.const 8)
-                                                            (i32.lt_u)
-                                                            (br_if $less_than_8_bytes))
-            
-                                                        (get_local $ctx)
-                                                        (call $load_reverse_endian (get_local $ptr) (get_local $w5))
-                                                        (tee_local $w5)
-                                                        (i64.store offset=104)
-
-                                                        (set_local $bytes_read (i64.add (get_local $bytes_read) (i64.const 8)))
-                                                        (get_local $input_end)
-                                                        (get_local $ptr)
-                                                        (i32.const 8)
-                                                        (i32.add)
-                                                        (tee_local $ptr)
-                                                        (i32.sub)
-                                                        (i32.const 8)
-                                                        (i32.lt_u)
-                                                        (br_if $less_than_8_bytes))
-                
-                                                    (get_local $ctx)
-                                                    (call $load_reverse_endian (get_local $ptr) (get_local $w6))
-                                                    (tee_local $w6)
-                                                    (i64.store offset=112)
-
-                                                    (set_local $bytes_read (i64.add (get_local $bytes_read) (i64.const 8)))
-                                                    (get_local $input_end)
-                                                    (get_local $ptr)
-                                                    (i32.const 8)
-                                                    (i32.add)
-                                                    (tee_local $ptr)
-                                                    (i32.sub)
-                                                    (i32.const 8)
-                                                    (i32.lt_u)
-                                                    (br_if $less_than_8_bytes))
-                            
-                                                (get_local $ctx)
-                                                (call $load_reverse_endian (get_local $ptr) (get_local $w7))
-                                                (tee_local $w7)
-                                                (i64.store offset=120)
-
-                                                (set_local $bytes_read (i64.add (get_local $bytes_read) (i64.const 8)))
-                                                (get_local $input_end)
-                                                (get_local $ptr)
-                                                (i32.const 8)
-                                                (i32.add)
-                                                (tee_local $ptr)
-                                                (i32.sub)
-                                                (i32.const 8)
-                                                (i32.lt_u)
-                                                (br_if $less_than_8_bytes))
-            
-                                            (get_local $ctx)
-                                            (call $load_reverse_endian (get_local $ptr) (get_local $w8))
-                                            (tee_local $w8)
-                                            (i64.store offset=128)
-
-                                            (set_local $bytes_read (i64.add (get_local $bytes_read) (i64.const 8)))
-                                            (get_local $input_end)
-                                            (get_local $ptr)
-                                            (i32.const 8)
-                                            (i32.add)
-                                            (tee_local $ptr)
-                                            (i32.sub)
-                                            (i32.const 8)
-                                            (i32.lt_u)
-                                            (br_if $less_than_8_bytes))
-            
-                                        (get_local $ctx)
-                                        (call $load_reverse_endian (get_local $ptr) (get_local $w9))
-                                        (tee_local $w9)
-                                        (i64.store offset=136)
-
-                                        (set_local $bytes_read (i64.add (get_local $bytes_read) (i64.const 8)))
-                                        (get_local $input_end)
-                                        (get_local $ptr)
-                                        (i32.const 8)
-                                        (i32.add)
-                                        (tee_local $ptr)
-                                        (i32.sub)
-                                        (i32.const 8)
-                                        (i32.lt_u)
-                                        (br_if $less_than_8_bytes))
-
-                                    (get_local $ctx)
-                                    (call $load_reverse_endian (get_local $ptr) (get_local $w10))
-                                    (tee_local $w10)
-                                    (i64.store offset=144)
-
-                                    (set_local $bytes_read (i64.add (get_local $bytes_read) (i64.const 8)))
-                                    (get_local $input_end)
-                                    (get_local $ptr)
-                                    (i32.const 8)
-                                    (i32.add)
-                                    (tee_local $ptr)
-                                    (i32.sub)
-                                    (i32.const 8)
-                                    (i32.lt_u)
-                                    (br_if $less_than_8_bytes))
-
-                                (get_local $ctx)
-                                (call $load_reverse_endian (get_local $ptr) (get_local $w11))
-                                (tee_local $w11)
-                                (i64.store offset=152)
-
-                                (set_local $bytes_read (i64.add (get_local $bytes_read) (i64.const 8)))
-                                (get_local $input_end)
-                                (get_local $ptr)
-                                (i32.const 8)
-                                (i32.add)
-                                (tee_local $ptr)
-                                (i32.sub)
-                                (i32.const 8)
-                                (i32.lt_u)
-                                (br_if $less_than_8_bytes))
-            
-                            (get_local $ctx)
-                            (call $load_reverse_endian (get_local $ptr) (get_local $w12))
-                            (tee_local $w12)
-                            (i64.store offset=160)
-
-                            (set_local $bytes_read (i64.add (get_local $bytes_read) (i64.const 8)))
-                            (get_local $input_end)
-                            (get_local $ptr)
-                            (i32.const 8)
-                            (i32.add)
-                            (tee_local $ptr)
-                            (i32.sub)
-                            (i32.const 8)
-                            (i32.lt_u)
-                            (br_if $less_than_8_bytes))
-
-                        (get_local $ctx)
-                        (call $load_reverse_endian (get_local $ptr) (get_local $w13))
-                        (tee_local $w13)
-                        (i64.store offset=168)
-
-                        (set_local $bytes_read (i64.add (get_local $bytes_read) (i64.const 8)))
-                        (get_local $input_end)
-                        (get_local $ptr)
-                        (i32.const 8)
-                        (i32.add)
-                        (tee_local $ptr)
-                        (i32.sub)
-                        (i32.const 8)
-                        (i32.lt_u)
-                        (br_if $less_than_8_bytes))
-            
-
-                    (get_local $ctx)
-                    (call $load_reverse_endian (get_local $ptr) (get_local $w14))
-                    (tee_local $w14)
-                    (i64.store offset=176)
-
-                    (set_local $bytes_read (i64.add (get_local $bytes_read) (i64.const 8)))
-                    (get_local $input_end)
-                    (get_local $ptr)
-                    (i32.const 8)
-                    (i32.add)
-                    (tee_local $ptr)
-                    (i32.sub)
-                    (i32.const 8)
-                    (i32.lt_u)
-                    (br_if $less_than_8_bytes))
-
-                (get_local $ctx)
-                (call $load_reverse_endian (get_local $ptr) (get_local $w15))
-                (tee_local $w15)
-                (i64.store offset=184)                
-
-                (set_local $bytes_read (i64.add (get_local $bytes_read) (i64.const 8)))
-                (get_local $ptr)
-                (i32.const 8)
-                (i32.add)
-                (tee_local $ptr)
-
-                ;; compress
-                (get_local $ctx)
-                (get_local $w0)
-                (get_local $w1)
-                (get_local $w2)
-                (get_local $w3)
-                (get_local $w4)
-                (get_local $w5)
-                (get_local $w6)
-                (get_local $w7)
-                (get_local $w8)
-                (get_local $w9)
-                (get_local $w10)
-                (get_local $w11)
-                (get_local $w12)
-                (get_local $w13)
-                (get_local $w14)
-                (get_local $w15)
-                (call $compress)
-
-                (i32.const 0)
-                (set_local $block_position)
-                (br $start)))
-  
-
-    ;; load last 8 bytes individually
-    (block $end
-
-        ;; check for empty input
-        (br_if $end (i32.eq (get_local $ptr) (get_local $input_end)))
-
-        (i32.sub (get_local $input_end) (get_local $ptr))
-        (i64.extend_u/i32)
-        (set_local $remaining)
-
-        (block $15
-            (block $14
-                (block $13
-                    (block $12
-                        (block $11
-                            (block $10
-                                (block $9
-                                    (block $8
-                                        (block $7
-                                            (block $6
-                                                (block $5
-                                                    (block $4
-                                                        (block $3
-                                                            (block $2
-                                                                (block $1
-                                                                    (block $0
-                                                                        (block $switch
-                                                                            (br_table $0 $1 $2 $3 $4 $5 $6 $7 $8 $9 $10 $11 $12 $13 $14 $15
-                                                                                (i32.rem_u (i32.div_u (i32.wrap/i64 (get_local $bytes_read)) (i32.const 8)) (i32.const 16)))))
-
-                                                                    (call $load_last_bytes (get_local $ptr) (get_local $remaining))
-                                                                    (set_local $w0)
-                                                                    (br $end))
-
-                                                                (call $load_last_bytes (get_local $ptr) (get_local $remaining))
-                                                                (set_local $w1)
-                                                                (br $end))
-
-                                                            (call $load_last_bytes (get_local $ptr) (get_local $remaining))
-                                                            (set_local $w2)
-                                                            (br $end))
-
-                                                        (call $load_last_bytes (get_local $ptr) (get_local $remaining))
-                                                        (set_local $w3)
-                                                        (br $end))
-
-                                                    (call $load_last_bytes (get_local $ptr) (get_local $remaining))
-                                                    (set_local $w4)
-                                                    (br $end))
-
-                                                (call $load_last_bytes (get_local $ptr) (get_local $remaining))
-                                                (set_local $w5)
-                                                (br $end))
-
-                                            (call $load_last_bytes (get_local $ptr) (get_local $remaining))
-                                            (set_local $w6)
-                                            (br $end))
-
-                                        (call $load_last_bytes (get_local $ptr) (get_local $remaining))
-                                        (set_local $w7)
-                                        (br $end))
-
-                                    (call $load_last_bytes (get_local $ptr) (get_local $remaining))
-                                    (set_local $w8)
-                                    (br $end))
-                                
-                                (call $load_last_bytes (get_local $ptr) (get_local $remaining))
-                                (set_local $w9)
-                                (br $end))
-
-                            (call $load_last_bytes (get_local $ptr) (get_local $remaining))
-                            (set_local $w10)
-                            (br $end))
-                        
-                        (call $load_last_bytes (get_local $ptr) (get_local $remaining))
-                        (set_local $w11)
-                        (br $end))
-
-                    (call $load_last_bytes (get_local $ptr) (get_local $remaining))
-                    (set_local $w12)
-                    (br $end))
-                
-                (call $load_last_bytes (get_local $ptr) (get_local $remaining))
-                (set_local $w13)
-                (br $end))
-            
-            (call $load_last_bytes (get_local $ptr) (get_local $remaining))
-            (set_local $w14)
-            (br $end))
-
-        (call $load_last_bytes (get_local $ptr) (get_local $remaining))
-        (set_local $w15))
-
-    (set_local $bytes_read (i64.add (get_local $bytes_read) (get_local $remaining)))
-
-    (get_local $ctx)
-    (get_local $w0)
-    (i64.store offset=64)
-    
-    (get_local $ctx)
-    (get_local $w1)
-    (i64.store offset=72)
-    
-    (get_local $ctx)
-    (get_local $w2)
-    (i64.store offset=80)
-    
-    (get_local $ctx)
-    (get_local $w3)  
-    (i64.store offset=88)
-    
-    (get_local $ctx)
-    (get_local $w4)
-    (i64.store offset=96)
-    
-    (get_local $ctx)
-    (get_local $w5)
-    (i64.store offset=104)
-    
-    (get_local $ctx)
-    (get_local $w6)
-    (i64.store offset=112)
-    
-    (get_local $ctx)
-    (get_local $w7) 
-    (i64.store offset=120)
-    
-    (get_local $ctx)
-    (get_local $w8)
-    (i64.store offset=128)
-    
-    (get_local $ctx)
-    (get_local $w9)
-    (i64.store offset=136)
-    
-    (get_local $ctx)
-    (get_local $w10)
-    (i64.store offset=144)
-    
-    (get_local $ctx)
-    (get_local $w11) 
-    (i64.store offset=152)
-    
-    (get_local $ctx)
-    (get_local $w12)
-    (i64.store offset=160)
-    
-    (get_local $ctx)
-    (get_local $w13)
-    (i64.store offset=168)
-    
-    (get_local $ctx)
-    (get_local $w14)
-    (i64.store offset=176)
-    
-    (get_local $ctx)
-    (get_local $w15)
-    (i64.store offset=184)
-
-    ;;  store number of bytes read
-    (get_local $ctx)
-    (get_local $bytes_read)
-    (i64.store offset=192)
-
-    ;; carry n > 64 bits for i128 length 
+    ;; carry n > 64 bits for i128 length
     (if (i64.lt_u (get_local $bytes_read) (get_local $check_overflow))
         (then
             (set_local $check_overflow (get_local $bytes_read))
             (set_local $bytes_read_overflow (i64.add (get_local $bytes_read_overflow) (i64.const 1)))))
 
-    (get_local $ctx)
-    (get_local $bytes_read_overflow)
-    (i64.store offset=200)
+    (i64.store offset=64 (get_local $ctx) (get_local $bytes_read))
+    (i64.store offset=72 (get_local $ctx) (get_local $bytes_read_overflow))
 
     (if (i32.eq (get_local $final) (i32.const 1))
-        (then
-            (i64.shl (i64.const 0x80) (i64.mul (i64.sub (i64.const 7) (i64.rem_u (get_local $bytes_read) (i64.const 8))) (i64.const 8)))
-            (set_local $last_word)
+      (then
+        (set_local $tail (i64.and (get_local $bytes_read) (i64.const 0x3f)))
+        (set_local $last_word (i64.shl (i64.const 0x80) (i64.shl (i64.and (get_local $tail) (i64.const 0x7)) (i64.const 3))))
 
-            (block $pad_end
-                (block $13
-                    (block $12
-                        (block $11
-                            (block $10
-                                (block $9
-                                    (block $8
-                                        (block $7
-                                            (block $6
-                                                (block $5
-                                                    (block $4
-                                                        (block $3
-                                                            (block $2
-                                                                (block $1
+        (block $pad_end
+                (block $832
+                    (block $768
+                        (block $704
+                            (block $640
+                                (block $576
+                                    (block $512
+                                        (block $448
+                                            (block $384
+                                                (block $320
+                                                    (block $256
+                                                        (block $192
+                                                            (block $128
+                                                                (block $64
                                                                     (block $0
-                                                                        (block $15
-                                                                            (block $14
+                                                                        (block $960
+                                                                            (block $896
                                                                                 (block $switch
-                                                                                    (i32.wrap/i64 (get_local $bytes_read))
-                                                                                    (i32.const 8)
-                                                                                    (i32.div_u)
-                                                                                    (i32.const 16)
-                                                                                    (i32.rem_u)
-                                                                                    (br_table $0 $1 $2 $3 $4 $5 $6 $7 $8 $9 $10 $11 $12 $13 $14 $15)))
+                                                                                    (i32.wrap/i64 (get_local $tail))
+                                                                                    (i32.const -16)
+                                                                                    (i32.and)
+                                                                                    (br_table $0 $64 $128 $192 $256 $320 $384 $448 $512 $576 $640 $704 $768 $832 $896 $960)))
                                                                                 
                                                                                 (get_local $last_word)
                                                                                 (get_local $w14)
@@ -1176,19 +762,34 @@
             
             ;; load upper limb of 128bit length
             (get_local $bytes_read)
-            (i64.const 56)
-            (i64.shr_u)
-            (i64.const 8)
-            (i64.mul)
-            (i64.const 8)
+            (i64.const 61)
             (i64.shr_u)
             (get_local $bytes_read_overflow)
-            (i64.const 8)
-            (i64.mul)
+            (i64.const 3)
+            (i64.shr_u)
             (i64.add)
             (set_local $w14)
 
             (set_local $w15 (i64.mul (get_local $bytes_read) (i64.const 8)))
+
+            (call $i64.log (i64.sub (get_local $w0) (i64.const 1)))
+            (call $i64.log (get_local $w0))
+            (call $i64.log (get_local $w1))
+            (call $i64.log (get_local $w2))
+            (call $i64.log (get_local $w3))
+            (call $i64.log (get_local $w4))
+            (call $i64.log (get_local $w5))
+            (call $i64.log (get_local $w6))
+            (call $i64.log (get_local $w7))
+            (call $i64.log (get_local $w8))
+            (call $i64.log (get_local $w9))
+            (call $i64.log (get_local $w10))
+            (call $i64.log (get_local $w11))
+            (call $i64.log (get_local $w12))
+            (call $i64.log (get_local $w13))
+            (call $i64.log (get_local $w14))
+            (call $i64.log (get_local $w15))
+            (set_local $w15 (i64.const 0x1800000000000000))
 
             (get_local $ctx)
             (get_local $w0)
@@ -1239,31 +840,6 @@
 
             (get_local $ctx)
             (call $i64.bswap (get_global $h))
-            (i64.store offset=56)
-
-            ;; zero out state
-            ;; (i64.store offset=64 (get_local $ctx) (i64.const 0))
-            ;; (i64.store offset=72 (get_local $ctx) (i64.const 0))
-            ;; (i64.store offset=80 (get_local $ctx) (i64.const 0))
-            ;; (i64.store offset=88 (get_local $ctx) (i64.const 0))
-            ;; (i64.store offset=96 (get_local $ctx) (i64.const 0))
-            ;; (i64.store offset=104 (get_local $ctx) (i64.const 0))
-            ;; (i64.store offset=112 (get_local $ctx) (i64.const 0))
-            ;; (i64.store offset=120 (get_local $ctx) (i64.const 0))
-            ;; (i64.store offset=128 (get_local $ctx) (i64.const 0))
-            ;; (i64.store offset=136 (get_local $ctx) (i64.const 0))
-            ;; (i64.store offset=144 (get_local $ctx) (i64.const 0))
-            ;; (i64.store offset=152 (get_local $ctx) (i64.const 0))
-            ;; (i64.store offset=160 (get_local $ctx) (i64.const 0))
-            ;; (i64.store offset=168 (get_local $ctx) (i64.const 0))
-            ;; (i64.store offset=176 (get_local $ctx) (i64.const 0))
-            ;; (i64.store offset=184 (get_local $ctx) (i64.const 0))
-
-            ;; (i64.store offset=192 (get_local $ctx) (i64.const 0))
-            ;; (i64.store offset=200 (get_local $ctx) (i64.const 0))
-            ))
+            (i64.store offset=56)))))
 
     ;; HASH COMPLETE FOR MESSAGE BLOCK
-
-    ;; return alignment offset
-    (get_local $leftover)))

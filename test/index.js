@@ -1,7 +1,6 @@
 const sha512 = require('../')
 const crypto = require('crypto')
 const tape = require('tape')
-const sha512js = require('js-sha512').sha512
 const vectors = require('./vectors.json')
 
 tape('empty input', function (t) {
@@ -18,7 +17,7 @@ tape('check each byte length < 128', function (t) {
       buf[i] = i
     }
 
-    const hash = new sha512().update(buf).digest()
+    const hash = sha512().update(buf).digest()
     const ref = crypto.createHash('sha512').update(buf).digest()
     same(t, hash, ref)
   }
@@ -69,7 +68,7 @@ tape('fuzz multiple updates', function (t) {
 
 tape('crypto-browserify test vectors', function (t) {
   let i = 0
-  for (let vector of vectors) {
+  for (const vector of vectors) {
     const buf = Buffer.from(vector.input, 'base64')
     const hash = sha512().update(buf).digest('hex')
     t.equal(hash, vector.hash, `input ${i}`)

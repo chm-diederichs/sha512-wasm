@@ -22,6 +22,8 @@ const freeList = []
 
 module.exports = Sha512
 const SHA512_BYTES = module.exports.SHA512_BYTES = 64
+const INPUT_OFFSET = 80
+const STATEBYTES = 208
 
 function Sha512 () {
   if (!(this instanceof Sha512)) return new Sha512()
@@ -35,7 +37,7 @@ function Sha512 () {
   this.finalized = false
   this.digestLength = SHA512_BYTES
   this.pointer = freeList.pop()
-  this.alignOffset = 0
+  this.bytesRead = 0
 
   wasm.memory.fill(0, this.pointer, this.pointer + 208)
 
@@ -55,9 +57,12 @@ Sha512.prototype.update = function (input, enc) {
   if (head + input.length > wasm.memory.length) wasm.realloc(head + input.length)
 
   wasm.memory.fill(0, head, head + this.alignOffset)
-  wasm.memory.set(inputBuf, head + this.alignOffset)
+  wasm.memory.set(inputBuf.subarray(0, 64), this.pointer + INPUT_OFFSET)
+  wasm.memory.set(inputBuf.subarray(64), head)
 
-  this.alignOffset = wasm.exports.sha512_monolith(this.pointer, head, head + length + this.alignOffset, 0)
+  this.bytesRead += length
+  this.alignOffset = wasm.exports.sha512(this.pointer, head + length + this.alignOffset, length, 0)
+  console.log(Buffer.from(wasm.memory.subarray(64, 80)).toString('hex'))
 
   return this
 }
@@ -68,8 +73,12 @@ Sha512.prototype.digest = function (enc, offset = 0) {
 
   freeList.push(this.pointer)
 
-  wasm.memory.fill(0, head, head + 16)
-  wasm.exports.sha512_monolith(this.pointer, head, head, 1)
+  console.log(Buffer.from(wasm.memory.subarray(64, 80)).toString('hex'))
+  const paddingStart = this.pointer + STATEBYTES + this.bytesRead % 64
+  wasm.memory.fill(0, paddingStart, this.pointer + STATEBYTES)
+  console.log(Buffer.from(wasm.memory.subarray(80, 208)).toString('hex'))
+  console.log(Buffer.from(wasm.memory.subarray(64, 80)).toString('hex'))
+  wasm.exports.sha512(this.pointer, head, 0, 1)
 
   const resultBuf = wasm.memory.subarray(this.pointer, this.pointer + this.digestLength)
 
