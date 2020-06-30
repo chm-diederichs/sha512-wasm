@@ -35,7 +35,6 @@ function size (name, data) {
 }
 
 ;(async () => {
-  console.log(wasm.buffer.byteLength)
   await size('64 bytes', shortData)
   await size('384 bytes', mediumData)
   await size('4096 bytes', longData)

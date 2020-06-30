@@ -23,7 +23,8 @@ const freeList = []
 module.exports = Sha512
 const SHA512_BYTES = module.exports.SHA512_BYTES = 64
 const INPUT_OFFSET = 80
-const STATEBYTES = 208
+const STATEBYTES = 216
+const BLOCKSIZE = 128
 
 function Sha512 () {
   if (!(this instanceof Sha512)) return new Sha512()
@@ -31,17 +32,17 @@ function Sha512 () {
 
   if (!freeList.length) {
     freeList.push(head)
-    head += 208
+    head += STATEBYTES
   }
 
   this.finalized = false
   this.digestLength = SHA512_BYTES
   this.pointer = freeList.pop()
-  this.bytesRead = 0
+  this.pos = 0
 
-  wasm.memory.fill(0, this.pointer, this.pointer + 208)
+  wasm.memory.fill(0, this.pointer, this.pointer + STATEBYTES)
 
-  if (this.pointer + this.digestLength > wasm.memory.length) wasm.realloc(this.pointer + 208)
+  if (this.pointer + this.digestLength > wasm.memory.length) wasm.realloc(this.pointer + STATEBYTES)
 }
 
 Sha512.prototype.update = function (input, enc) {
@@ -56,13 +57,12 @@ Sha512.prototype.update = function (input, enc) {
 
   if (head + input.length > wasm.memory.length) wasm.realloc(head + input.length)
 
-  wasm.memory.fill(0, head, head + this.alignOffset)
-  wasm.memory.set(inputBuf.subarray(0, 64), this.pointer + INPUT_OFFSET)
-  wasm.memory.set(inputBuf.subarray(64), head)
+  wasm.memory.fill(0, head, head + roundUp(length, BLOCKSIZE) - BLOCKSIZE)
+  wasm.memory.set(inputBuf.subarray(0, BLOCKSIZE - this.pos), this.pointer + INPUT_OFFSET + this.pos)
+  wasm.memory.set(inputBuf.subarray(BLOCKSIZE - this.pos), head)
 
-  this.bytesRead += length
-  this.alignOffset = wasm.exports.sha512(this.pointer, head + length + this.alignOffset, length, 0)
-  console.log(Buffer.from(wasm.memory.subarray(64, 80)).toString('hex'))
+  this.pos = (this.pos + length) & 0x7f
+  this.alignOffset = wasm.exports.sha512(this.pointer, head, length, 0)
 
   return this
 }
@@ -73,11 +73,8 @@ Sha512.prototype.digest = function (enc, offset = 0) {
 
   freeList.push(this.pointer)
 
-  console.log(Buffer.from(wasm.memory.subarray(64, 80)).toString('hex'))
-  const paddingStart = this.pointer + STATEBYTES + this.bytesRead % 64
-  wasm.memory.fill(0, paddingStart, this.pointer + STATEBYTES)
-  console.log(Buffer.from(wasm.memory.subarray(80, 208)).toString('hex'))
-  console.log(Buffer.from(wasm.memory.subarray(64, 80)).toString('hex'))
+  const paddingStart = this.pointer + INPUT_OFFSET + this.pos
+  wasm.memory.fill(0, paddingStart, this.pointer + INPUT_OFFSET + BLOCKSIZE)
   wasm.exports.sha512(this.pointer, head, 0, 1)
 
   const resultBuf = wasm.memory.subarray(this.pointer, this.pointer + this.digestLength)
@@ -130,7 +127,7 @@ function formatInput (input, enc) {
 
 function strToBuf (input, enc) {
   if (enc === 'hex') return hex2bin(input)
-  else if (enc === 'utf8' || enc === 'utf-8') return new TextDecoder().decode(input)
+  else if (enc === 'utf8' || enc === 'utf-8') return new TextEncoder().encode(input)
   else if (enc === 'base64') return atob(input)
   else throw new Error('Encoding: ' + enc + ' not supported')
 }
@@ -151,4 +148,8 @@ function hexSlice (buf, start, len) {
 function toHex (n) {
   if (n < 16) return '0' + n.toString(16)
   return n.toString(16)
+}
+
+function roundUp (n, base) {
+  return (n + base - 1) & -base
 }
