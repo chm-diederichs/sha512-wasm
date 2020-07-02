@@ -39,6 +39,7 @@ function Sha512 () {
   this.digestLength = SHA512_BYTES
   this.pointer = freeList.pop()
   this.pos = 0
+  this.wasm = wasm
 
   wasm.memory.fill(0, this.pointer, this.pointer + STATEBYTES)
 
@@ -62,15 +63,15 @@ Sha512.prototype.update = function (input, enc) {
   wasm.memory.set(inputBuf.subarray(BLOCKSIZE - this.pos), head)
 
   this.pos = (this.pos + length) & 0x7f
-  this.alignOffset = wasm.exports.sha512(this.pointer, head, length, 0)
+  wasm.exports.sha512(this.pointer, head, length, 0)
 
   return this
 }
 
 Sha512.prototype.digest = function (enc, offset = 0) {
   assert(this.finalized === false, 'Hash instance finalized')
-  this.finalized = true
 
+  this.finalized = true
   freeList.push(this.pointer)
 
   const paddingStart = this.pointer + INPUT_OFFSET + this.pos
@@ -150,6 +151,7 @@ function toHex (n) {
   return n.toString(16)
 }
 
+// only works for base that is power of 2
 function roundUp (n, base) {
   return (n + base - 1) & -base
 }
