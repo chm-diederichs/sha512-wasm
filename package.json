@@ -12,13 +12,16 @@
     "WASM",
     "WebAssembly"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/chm-diederichs/sha512-wasm.git"
+  },
   "author": "Christophe Diederichs",
   "license": "ISC",
   "dependencies": {
     "nanoassert": "^2.0.0"
   },
   "devDependencies": {
-    "cronometro": "^0.4.0",
     "js-sha512": "^0.8.0",
     "tape": "^4.13.0",
     "wat2js": "^2.1.1",
