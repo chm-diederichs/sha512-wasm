@@ -102,7 +102,7 @@ Sha512.prototype.digest = function (enc, offset = 0) {
 }
 
 Sha512.WASM = wasm && wasm.buffer
-Sha512.SUPPORTED = typeof WebAssembly !== 'undefined'
+Sha512.WASM_SUPPORTED = typeof WebAssembly !== 'undefined'
 
 Sha512.ready = function (cb) {
   if (!cb) cb = noop
