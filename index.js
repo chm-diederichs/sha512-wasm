@@ -92,7 +92,7 @@ Sha512.prototype.digest = function (enc, offset = 0) {
   }
 
   assert(enc instanceof Uint8Array, 'input must be Uint8Array or Buffer')
-  assert(enc.byteLength >= this.digestLength + offset, 'input must be Uint8Array or Buffer')
+  assert(enc.byteLength >= this.digestLength + offset, `input must be at least ${this.digestLength + offset} bytes`)
 
   for (let i = 0; i < this.digestLength; i++) {
     enc[i + offset] = resultBuf[i]
