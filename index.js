@@ -91,8 +91,9 @@ Sha512.prototype.digest = function (enc, offset = 0) {
     throw new Error('Encoding: ' + enc + ' not supported')
   }
 
-  assert(enc instanceof Uint8Array, 'input must be Uint8Array or Buffer')
-  assert(enc.byteLength >= this.digestLength + offset, 'input must be Uint8Array or Buffer')
+  assert(enc instanceof Uint8Array, 'output must be Uint8Array or Buffer')
+  assert(enc.byteLength >= this.digestLength + offset,
+    "output must have at least 'SHA512_BYTES' bytes remaining")
 
   for (let i = 0; i < this.digestLength; i++) {
     enc[i + offset] = resultBuf[i]
