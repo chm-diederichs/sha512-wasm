@@ -106,13 +106,17 @@ Sha512.WASM = wasm && wasm.buffer
 Sha512.WASM_SUPPORTED = typeof WebAssembly !== 'undefined'
 
 Sha512.ready = function (cb) {
-  if (!cb) cb = noop
   if (!wasm) return cb(new Error('WebAssembly not supported'))
+
+  if (cb) {
+    wasm.onload(cb)
+    return
+  }
 
   var p = new Promise(function (reject, resolve) {
     wasm.onload(function (err) {
-      if (err) resolve(err)
-      else reject()
+      if (err) reject(err)
+      else resolve()
       cb(err)
     })
   })
