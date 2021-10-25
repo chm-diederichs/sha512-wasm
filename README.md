@@ -47,21 +47,11 @@ You have to call this at least once before instantiating the hash.
 
 ## Contributing
 
-The bulk of this module is implemented in WebAssembly in the [sha512.wat](sha512.wat) file.
-The format of this file is S-Expressions that can be compiled to their binary WASM representation by doing
+The bulk of this module is implemented in WebAssembly in the [sha512.wat](sha512.wat) file. To build the thin Javascript wrapper do:
 
-```
-wat2wasm sha512.wat -o sha512.wasm
-```
-
-To build the thin Javascript wrapper for the WASM module use `wat2js`:
-
-```
-# also available as `npm run compile`
-wat2js sha512.wat -o sha512.js
-```
-
-If you do not have `wat2wasm` installed follow the instructions here, https://github.com/WebAssembly/wabt
+ ```
+ npm run compile
+ ```
 
 ## License
 
