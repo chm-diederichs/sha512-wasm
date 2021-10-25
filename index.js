@@ -1,7 +1,6 @@
-if (btoa == null) var btoa = buf => require('buf' + 'fer')['Buf' + 'fer'].from(buf).toString('base64')
-if (atob == null) var atob = buf => new Uint8Array(require('buf' + 'fer')['Buf' + 'fer'].from(buf, 'base64'))
-
 const assert = require('nanoassert')
+const b4a = require('b4a')
+
 const wasm = require('./sha512.js')({
   imports: {
     debug: {
@@ -28,7 +27,7 @@ const BLOCKSIZE = 128
 
 function Sha512 () {
   if (!(this instanceof Sha512)) return new Sha512()
-  if (!(wasm && wasm.exports)) throw new Error('WASM not loaded. Wait for Sha512.ready(cb)')
+  if (!(wasm)) throw new Error('WASM not loaded. Wait for Sha512.ready(cb)')
 
   if (!freeList.length) {
     freeList.push(head)
@@ -41,9 +40,15 @@ function Sha512 () {
   this.pos = 0
   this.wasm = wasm
 
-  wasm.memory.fill(0, this.pointer, this.pointer + STATEBYTES)
+  this._memory = new Uint8Array(wasm.memory.buffer)
+  this._memory.fill(0, this.pointer, this.pointer + STATEBYTES)
 
-  if (this.pointer + this.digestLength > wasm.memory.length) wasm.realloc(this.pointer + STATEBYTES)
+  if (this.pointer + this.digestLength > this._memory.length) this._realloc(this.pointer + STATEBYTES)
+}
+
+Sha512.prototype._realloc = function (size) {
+  wasm.memory.grow(Math.max(0, Math.ceil(Math.abs(size - this._memory.length) / 65536)))
+  this._memory = new Uint8Array(wasm.memory.buffer)
 }
 
 Sha512.prototype.update = function (input, enc) {
@@ -56,14 +61,14 @@ Sha512.prototype.update = function (input, enc) {
 
   assert(inputBuf instanceof Uint8Array, 'input must be Uint8Array or Buffer')
 
-  if (head + input.length > wasm.memory.length) wasm.realloc(head + input.length)
+  if (head + input.length > this._memory.length) this._realloc(head + input.length)
 
-  wasm.memory.fill(0, head, head + roundUp(length, BLOCKSIZE) - BLOCKSIZE)
-  wasm.memory.set(inputBuf.subarray(0, BLOCKSIZE - this.pos), this.pointer + INPUT_OFFSET + this.pos)
-  wasm.memory.set(inputBuf.subarray(BLOCKSIZE - this.pos), head)
+  this._memory.fill(0, head, head + roundUp(length, BLOCKSIZE) - BLOCKSIZE)
+  this._memory.set(inputBuf.subarray(0, BLOCKSIZE - this.pos), this.pointer + INPUT_OFFSET + this.pos)
+  this._memory.set(inputBuf.subarray(BLOCKSIZE - this.pos), head)
 
   this.pos = (this.pos + length) & 0x7f
-  wasm.exports.sha512(this.pointer, head, length, 0)
+  wasm.sha512(this.pointer, head, length, 0)
 
   return this
 }
@@ -75,20 +80,17 @@ Sha512.prototype.digest = function (enc, offset = 0) {
   freeList.push(this.pointer)
 
   const paddingStart = this.pointer + INPUT_OFFSET + this.pos
-  wasm.memory.fill(0, paddingStart, this.pointer + INPUT_OFFSET + BLOCKSIZE)
-  wasm.exports.sha512(this.pointer, head, 0, 1)
+  this._memory.fill(0, paddingStart, this.pointer + INPUT_OFFSET + BLOCKSIZE)
+  wasm.sha512(this.pointer, head, 0, 1)
 
-  const resultBuf = wasm.memory.subarray(this.pointer, this.pointer + this.digestLength)
+  const resultBuf = this._memory.subarray(this.pointer, this.pointer + this.digestLength)
 
   if (!enc) {
     return resultBuf
   }
 
   if (typeof enc === 'string') {
-    if (enc === 'hex') return hexSlice(resultBuf, 0, resultBuf.length)
-    if (enc === 'utf8' || enc === 'utf-8') return new TextEncoder().encode(resultBuf)
-    if (enc === 'base64') return btoa(resultBuf)
-    throw new Error('Encoding: ' + enc + ' not supported')
+    return b4a.toString(resultBuf, enc)
   }
 
   assert(enc instanceof Uint8Array, 'output must be Uint8Array or Buffer')
@@ -102,26 +104,14 @@ Sha512.prototype.digest = function (enc, offset = 0) {
   return enc
 }
 
-Sha512.WASM = wasm && wasm.buffer
+Sha512.WASM = wasm
 Sha512.WASM_SUPPORTED = typeof WebAssembly !== 'undefined'
 
 Sha512.ready = function (cb) {
+  if (!cb) cb = noop
   if (!wasm) return cb(new Error('WebAssembly not supported'))
-
-  if (cb) {
-    wasm.onload(cb)
-    return
-  }
-
-  var p = new Promise(function (resolve, reject) {
-    wasm.onload(function (err) {
-      if (err) reject(err)
-      else resolve()
-      cb(err)
-    })
-  })
-
-  return p
+  cb()
+  return Promise.resolve()
 }
 
 Sha512.prototype.ready = Sha512.ready
@@ -129,11 +119,11 @@ Sha512.prototype.ready = Sha512.ready
 function HMAC (key) {
   if (!(this instanceof HMAC)) return new HMAC(key)
 
-  this.pad = Buffer.alloc(128)
+  this.pad = b4a.alloc(128)
   this.inner = Sha512()
   this.outer = Sha512()
 
-  const keyhash = Buffer.alloc(64)
+  const keyhash = b4a.alloc(64)
   if (key.byteLength > 128) {
     Sha512().update(key).digest(keyhash)
     key = keyhash
@@ -170,34 +160,9 @@ Sha512.HMAC = HMAC
 function noop () {}
 
 function formatInput (input, enc) {
-  var result = input instanceof Uint8Array ? input : strToBuf(input, enc)
+  var result = b4a.from(input, enc)
 
   return [result, result.byteLength]
-}
-
-function strToBuf (input, enc) {
-  if (enc === 'hex') return hex2bin(input)
-  else if (enc === 'utf8' || enc === 'utf-8') return new TextEncoder().encode(input)
-  else if (enc === 'base64') return atob(input)
-  else throw new Error('Encoding: ' + enc + ' not supported')
-}
-
-function hex2bin (str) {
-  if (str.length % 2 !== 0) return hex2bin('0' + str)
-  var ret = new Uint8Array(str.length / 2)
-  for (var i = 0; i < ret.length; i++) ret[i] = Number('0x' + str.substring(2 * i, 2 * i + 2))
-  return ret
-}
-
-function hexSlice (buf, start, len) {
-  var str = ''
-  for (var i = 0; i < len; i++) str += toHex(buf[start + i])
-  return str
-}
-
-function toHex (n) {
-  if (n < 16) return '0' + n.toString(16)
-  return n.toString(16)
 }
 
 // only works for base that is power of 2
