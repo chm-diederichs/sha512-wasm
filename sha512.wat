@@ -1,5 +1,5 @@
 (module
-  (memory (export "memory") 0)
+  (memory (export "memory") 1)
 
   ;; registers
   (global $a (mut i64) (i64.const 0))
@@ -105,7 +105,7 @@
 
     (i64.add
       (i64.add
-        (i64.add 
+        (i64.add
           (i64.xor
             (i64.xor
               (i64.rotr (get_local $a) (i64.const 19))
@@ -254,8 +254,8 @@
     (set_local $w12 (call $expand (get_local $w10) (get_local $w5)  (get_local $w13) (get_local $w12)))
     (set_local $w13 (call $expand (get_local $w11) (get_local $w6)  (get_local $w14) (get_local $w13)))
     (set_local $w14 (call $expand (get_local $w12) (get_local $w7)  (get_local $w15) (get_local $w14)))
-    (set_local $w15 (call $expand (get_local $w13) (get_local $w8)  (get_local $w0)  (get_local $w15)))    
-    
+    (set_local $w15 (call $expand (get_local $w13) (get_local $w8)  (get_local $w0)  (get_local $w15)))
+
     (call $four_round (get_local $w0)  (get_local $w1)  (get_local $w2)  (get_local $w3)  (i64.const 0xca273eceea26619c) (i64.const 0xd186b8c721c0c207) (i64.const 0xeada7dd6cde0eb1e) (i64.const 0xf57d4f7fee6ed178))
     (call $four_round (get_local $w4)  (get_local $w5)  (get_local $w6)  (get_local $w7)  (i64.const 0x06f067aa72176fba) (i64.const 0x0a637dc5a2c898a6) (i64.const 0x113f9804bef90dae) (i64.const 0x1b710b35131c471b))
     (call $four_round (get_local $w8)  (get_local $w9)  (get_local $w10) (get_local $w11) (i64.const 0x28db77f523047d84) (i64.const 0x32caab7b40c72493) (i64.const 0x3c9ebe0a15c9bebc) (i64.const 0x431d67c49c100d4c))
@@ -287,9 +287,9 @@
     (local $tail i64)
 
     ;; expanded message schedule
-    (local $w0 i64)  (local $w1 i64)  (local $w2 i64)  (local $w3 i64)  
-    (local $w4 i64)  (local $w5 i64)  (local $w6 i64)  (local $w7 i64) 
-    (local $w8 i64)  (local $w9 i64)  (local $w10 i64) (local $w11 i64) 
+    (local $w0 i64)  (local $w1 i64)  (local $w2 i64)  (local $w3 i64)
+    (local $w4 i64)  (local $w5 i64)  (local $w6 i64)  (local $w7 i64)
+    (local $w8 i64)  (local $w9 i64)  (local $w10 i64) (local $w11 i64)
     (local $w12 i64) (local $w13 i64) (local $w14 i64) (local $w15 i64)
 
     (set_local $bytes_read (i64.load offset=64 (get_local $ctx)))
@@ -440,13 +440,13 @@
                                                                                     (i32.const 3)
                                                                                     (i32.shr_u)
                                                                                     (br_table $0 $1 $2 $3 $4 $5 $6 $7 $8 $9 $10 $11 $12 $13 $14 $15)))
-                                                                                
+
                                                                                 (get_local $last_word)
                                                                                 (get_local $w14)
                                                                                 (i64.or)
                                                                                 (set_local $w14)
                                                                                 (set_local $last_word (i64.const 0)))
-                                                                            
+
                                                                             (get_local $last_word)
                                                                             (get_local $w15)
                                                                             (i64.or)
@@ -492,91 +492,91 @@
                                                                             (set_local $w13 (i64.const 0))
                                                                             (set_local $w14 (i64.const 0))
                                                                             (set_local $w15 (i64.const 0)))
-                                                                        
+
                                                                         (get_local $last_word)
                                                                         (get_local $w0)
                                                                         (i64.or)
                                                                         (set_local $w0)
                                                                         (set_local $last_word (i64.const 0)))
-                                                                    
+
                                                                     (get_local $last_word)
                                                                     (get_local $w1)
                                                                     (i64.or)
                                                                     (set_local $w1)
                                                                     (set_local $last_word (i64.const 0)))
-                                                                
+
                                                                 (get_local $last_word)
                                                                 (get_local $w2)
                                                                 (i64.or)
                                                                 (set_local $w2)
                                                                 (set_local $last_word (i64.const 0)))
-                                                            
+
                                                             (get_local $last_word)
                                                             (get_local $w3)
                                                             (i64.or)
                                                             (set_local $w3)
                                                             (set_local $last_word (i64.const 0)))
-                                                        
+
                                                         (get_local $last_word)
                                                         (get_local $w4)
                                                         (i64.or)
                                                         (set_local $w4)
                                                         (set_local $last_word (i64.const 0)))
-                                                    
+
                                                     (get_local $last_word)
                                                     (get_local $w5)
                                                     (i64.or)
                                                     (set_local $w5)
                                                     (set_local $last_word (i64.const 0)))
-                                                
+
                                                 (get_local $last_word)
                                                 (get_local $w6)
                                                 (i64.or)
                                                 (set_local $w6)
                                                 (set_local $last_word (i64.const 0)))
-                                            
+
                                             (get_local $last_word)
                                             (get_local $w7)
                                             (i64.or)
                                             (set_local $w7)
                                             (set_local $last_word (i64.const 0)))
-                                        
+
                                         (get_local $last_word)
                                         (get_local $w8)
                                         (i64.or)
                                         (set_local $w8)
                                         (set_local $last_word (i64.const 0)))
-                                    
+
                                     (get_local $last_word)
                                     (get_local $w9)
                                     (i64.or)
                                     (set_local $w9)
                                     (set_local $last_word (i64.const 0)))
-                                
+
                                 (get_local $last_word)
                                 (get_local $w10)
                                 (i64.or)
                                 (set_local $w10)
                                 (set_local $last_word (i64.const 0)))
-                            
+
                             (get_local $last_word)
                             (get_local $w11)
                             (i64.or)
                             (set_local $w11)
                             (set_local $last_word (i64.const 0)))
-                        
+
                         (get_local $last_word)
                         (get_local $w12)
                         (i64.or)
                         (set_local $w12)
                         (set_local $last_word (i64.const 0)))
-                    
+
                     (get_local $last_word)
                     (get_local $w13)
                     (i64.or)
                     (set_local $w13)
                     (set_local $last_word (i64.const 0)))
-            
+
             ;; load upper limb of 128bit length
             (get_local $bytes_read)
             (i64.const 61)
