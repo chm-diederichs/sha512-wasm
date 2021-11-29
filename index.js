@@ -1,7 +1,7 @@
 const assert = require('nanoassert')
 const b4a = require('b4a')
 
-const wasm = typeof WebAseembly !== 'undefined' && require('./sha512.js')({
+const wasm = typeof WebAssembly !== 'undefined' && require('./sha512.js')({
   imports: {
     debug: {
       log (...args) {
